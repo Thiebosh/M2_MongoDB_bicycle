@@ -1,11 +1,12 @@
+from typing import Iterable
 from pymongo import MongoClient
 import json
 import os
 
 from exo1.exo import exo1
-from exo2 import *
-from exo3 import *
-from exo4 import *
+from exo2.exo import exo2
+from exo3.exo import exo3
+from exo4.exo import exo4
 
 
 def connectDB(jsonFile):
@@ -29,6 +30,13 @@ if __name__ == "__main__":
 
     print("server's connection established")
 
-    exo1(client)
+    for i, exo in enumerate([exo1, exo2, exo3, exo4]):
+        print(f"exo {i+1}:\n\n")
+
+        exo(client)
+
+        print("\n\n")
+        if i != 3:
+            input("continue..")
 
     print("everything's done")
