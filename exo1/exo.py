@@ -1,4 +1,4 @@
-# from pymongo import collation, collection
+from pymongo import  MongoClient, collation, collection
 # from pprint import pprint
 
 # client = MongoClient('mongodb://localhost:27017/')
@@ -41,7 +41,7 @@ def get_vlille():
     
     response_json = json.loads(response.text.encode("utf8"))
 
-    allFields = [record["fields"] for record in response_json["records"]]
+    allFields = [{**record["fields"], "geometry": record["geometry"]} for record in response_json["records"]]
 
     filteredFields = [{"_id" : fields["libelle"],
                     "ville" : "Lille",
@@ -50,33 +50,30 @@ def get_vlille():
                     "nbplacesdispo" : fields["nbplacesdispo"],
                     "nbplacestotal" : fields["nbvelosdispo"] + fields["nbplacesdispo"],
                     "cb" : int(fields["type"]=="AVEC TPE"), 
-                    "geometry" : {
-                        "type" : "Point",
-                        "coordinates": fields["geo"]
-                    }
-                    } for fields in allFields]
+                    "geometry" : fields["geometry"]} for fields in allFields]
 
     filteredFields.sort(key=lambda x: x["_id"])
 
     return filteredFields
 
-def exo1(client):
+def exo1(collection):
+    print("create geo index for 'geometry' field...")
+    result = collection.create_index([("geometry", "2dsphere")])
+    print(f"=> index name : {result}")
 
+    print("\n\n")
+
+    lille = get_vlille()
+    print(f"add 'lille' data...")
+    result = collection.insert_many(lille)
+    print(f"=> inserted {len(result.inserted_ids)}/{len(lille)} lines")
     
+    print("\n\n")
 
-    print(" step1 : access collection")
-    collection = client.TP1.exo1
+    # lyon
 
+    # montpellier
 
-    print(" step2 : add data")
-    collection.create_index("{geometry: '2dsphere'}")
-    collection.insert_many(get_vlille())
-    
-
-    print(" step3 : print data")
-    for element in collection.find({}):
+    print("print some data")
+    for element in collection.find({ "geometry": { "$near": {"$geometry": {"type": 'Point', "coordinates":[3.0485, 50.6342]}, "$maxDistance": 500, "$minDistance": 0 } } }):
         print(element)
-
-
-# db.stations.createIndex({geometry: "2dsphere"})
-# db.stations.find({ "geometry": { $near: {$geometry: {type: 'Point', coordinates:[3.0485, 50.6342]}, $maxDistance: 500, $minDistance: 0 } } } )
