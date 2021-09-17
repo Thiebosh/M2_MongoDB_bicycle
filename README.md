@@ -13,6 +13,7 @@ projet en python, avec marc, hébergé sur git (envoy par mail), deux semaines (
 **Lille** => données ok
 https://opendata.lillemetropole.fr/explore/dataset/vlille-realtime/api/
 
+https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=400&facet=nom&facet=type&facet=nbvelosdispo&facet=nbplacesdispo => data geojson / facet permet de préciser champs à avoir (?)
 https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&facet=libelle&facet=nom&facet=commune&facet=etat&facet=type&facet=etatconnexion => data geojson
 
 contient :

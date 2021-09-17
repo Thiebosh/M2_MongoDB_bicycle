@@ -25,11 +25,11 @@ def connectDB(jsonFile):
 
 
 if __name__ == "__main__":
-    client = connectDB("credentials.json")
-
+    # client = connectDB("credentials.json")
+    client = []
     print("server's connection established")
 
-    for i, exo in enumerate([exo1, exo2, exo3, exo4]):
+    for i, exo in enumerate([exo1]):  #, exo2, exo3, exo4]):
         print(f"exo {i+1}:\n\n")
 
         exo(client)

@@ -30,9 +30,37 @@
 # my_result = list(cursors)
 # pprint(my_result)
 
+import requests
+import json
+
+
+def get_vlille():
+    url = "https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=400"
+
+    response = requests.request("GET", url)
+    
+    response_json = json.loads(response.text.encode("utf8"))
+
+    records = response_json["records"]
+
+    allFields = [record["fields"] for record in records]
+
+    filteredFields = [{"ville" : "Lille",
+                   "nom" : fields["nom"],
+                   "nbvelosdispo" : fields["nbvelosdispo"],
+                   "nbplacesdispo" : fields["nbplacesdispo"],
+                   "nbplacestotal" : fields["nbvelosdispo"] + fields["nbplacesdispo"],
+                   "cb" : int(fields["type"]=="AVEC TPE"), 
+                   "geo" : fields["geo"]} for fields in allFields]
+
+    print(filteredFields[0])
+    print("\n")
+    print(len(filteredFields))
 
 def exo1(client):
-    
+
+    get_vlille()
+    exit()
     print(" step1 : access collection")
     collection = client.test.some
 
