@@ -41,30 +41,42 @@ def get_vlille():
     
     response_json = json.loads(response.text.encode("utf8"))
 
-    records = response_json["records"]
+    allFields = [record["fields"] for record in response_json["records"]]
 
-    allFields = [record["fields"] for record in records]
+    filteredFields = [{"_id" : fields["libelle"],
+                    "ville" : "Lille",
+                    "nom" : fields["nom"],
+                    "nbvelosdispo" : fields["nbvelosdispo"],
+                    "nbplacesdispo" : fields["nbplacesdispo"],
+                    "nbplacestotal" : fields["nbvelosdispo"] + fields["nbplacesdispo"],
+                    "cb" : int(fields["type"]=="AVEC TPE"), 
+                    "geometry" : {
+                        "type" : "Point",
+                        "coordinates": fields["geo"]
+                    }
+                    } for fields in allFields]
 
-    filteredFields = [{"ville" : "Lille",
-                   "nom" : fields["nom"],
-                   "nbvelosdispo" : fields["nbvelosdispo"],
-                   "nbplacesdispo" : fields["nbplacesdispo"],
-                   "nbplacestotal" : fields["nbvelosdispo"] + fields["nbplacesdispo"],
-                   "cb" : int(fields["type"]=="AVEC TPE"), 
-                   "geo" : fields["geo"]} for fields in allFields]
+    filteredFields.sort(key=lambda x: x["_id"])
 
-    print(filteredFields[0])
-    print("\n")
-    print(len(filteredFields))
+    return filteredFields
 
 def exo1(client):
 
-    get_vlille()
-    exit()
-    print(" step1 : access collection")
-    collection = client.test.some
+    
 
-    print(" step2 : print data")
+    print(" step1 : access collection")
+    collection = client.TP1.exo1
+
+
+    print(" step2 : add data")
+    collection.create_index("{geometry: '2dsphere'}")
+    collection.insert_many(get_vlille())
+    
+
+    print(" step3 : print data")
     for element in collection.find({}):
         print(element)
 
+
+# db.stations.createIndex({geometry: "2dsphere"})
+# db.stations.find({ "geometry": { $near: {$geometry: {type: 'Point', coordinates:[3.0485, 50.6342]}, $maxDistance: 500, $minDistance: 0 } } } )

@@ -25,8 +25,8 @@ def connectDB(jsonFile):
 
 
 if __name__ == "__main__":
-    # client = connectDB("credentials.json")
-    client = []
+    client = connectDB("credentials.json")
+
     print("server's connection established")
 
     for i, exo in enumerate([exo1]):  #, exo2, exo3, exo4]):
