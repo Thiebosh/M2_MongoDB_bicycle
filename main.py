@@ -1,4 +1,3 @@
-from typing import Iterable
 from pymongo import MongoClient
 import json
 import os
