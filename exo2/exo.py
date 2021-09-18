@@ -17,8 +17,6 @@ def update_lille():
                     "nbplacesdispo" : fields["nbplacesdispo"]}
                     for fields in allFields]
 
-    # filteredFields.sort(key=lambda x: x["_id"])
-
     return filteredFields
 
 
@@ -35,7 +33,7 @@ def exo2(collection):
             {
                 "$set" : {
                     "nbvelosdispo": [data["nbvelosdispo"] for data in datas],
-                    "nbplacesdispo": [data["nbplacesdispo"] for data in datas],
+                    "nbplacesdispo": [data["nbplacesdispo"] for data in datas]
                 }
             }
         )
