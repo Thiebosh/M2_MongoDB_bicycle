@@ -31,7 +31,7 @@ if __name__ == "__main__":
     collection.delete_many({})
     print("DB cleaned")
     
-    for i, exo in enumerate([exo1]):  #, exo2, exo3, exo4]):
+    for i, exo in enumerate([exo1, exo2, exo3]):  #, exo2, exo3, exo4]):
         print(f"exo {i+1}:\n\n")
 
         exo(collection)

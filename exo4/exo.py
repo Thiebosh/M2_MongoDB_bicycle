@@ -1,3 +1,3 @@
 
-def exo4(client):    
+def exo4(collection):    
     print("wip")

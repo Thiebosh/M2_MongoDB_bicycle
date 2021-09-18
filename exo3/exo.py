@@ -1,3 +1,5 @@
 
-def exo3(client):    
-    print("wip")
+def exo3(collection):
+    print("print some data")
+    for element in collection.find({ "geometry": { "$near": {"$geometry": {"type": 'Point', "coordinates":[3.0485, 50.6342]}, "$maxDistance": 500, "$minDistance": 0 } } }):
+        print(element)
