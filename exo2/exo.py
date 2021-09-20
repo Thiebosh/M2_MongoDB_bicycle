@@ -7,6 +7,10 @@ from pymongo.errors import BulkWriteError
 
 # from bson.objectid import ObjectId
 
+import threading
+from time import sleep
+
+
 def update_Lyon():
     url = "https://transport.data.gouv.fr/gbfs/lyon/station_status.json"
 
@@ -57,8 +61,7 @@ def update_lille():
     return filteredFields
 
 
-def exo2(collection_live, collection_history):
-    print("collect dynamic api's datas...")
+def refresh(collection_live, collection_history):
     datas = update_lille()
     datas += update_Lyon()
     datas += update_montpellier()
@@ -107,5 +110,17 @@ def exo2(collection_live, collection_history):
         print("something went wrong...")
         print(e)
 
-    # history : collection à part avec historique des données mises à jour => trois champs envoyés pour être tranquille + date
-    # id : pas forcément numérique => peut préfixer avec nom ville pour éviter collisions
+
+def worker(collection_live, collection_history, evt_end):
+    try:
+        while not evt_end.is_set():
+            refresh(collection_live, collection_history)
+            sleep(2) # seconds
+
+    finally:
+        print("close thread")
+        evt_end.set()
+
+
+def exo2(collection_live, collection_history, evt_end):
+    threading.Thread(target=worker, args=(collection_live, collection_history, evt_end)).start()

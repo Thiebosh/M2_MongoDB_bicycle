@@ -1,3 +1,3 @@
 
-def exo4(collection, _):    
+def exo4(*_):    
     print("wip")

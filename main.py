@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import json
 import os
+from threading import Event
 
 from exo1.exo import exo1
 from exo2.exo import exo2
@@ -29,14 +30,20 @@ if __name__ == "__main__":
     collection_live = client.live
     collection_history = client.history
     print("server's connection established")
-    
-    for i, exo in enumerate([exo1, exo2, exo3]):
-        print(f"exo {i+1}:\n\n")
 
-        exo(collection_live, collection_history)
+    evt_end = Event()
 
-        print("\n\n")
-        if i != 3:
-            input("continue..")
+    try:
+        for i, exo in enumerate([exo1, exo2, exo3]):
+            print(f"exo {i+1}:\n\n")
 
-    print("everything's done")
+            exo(collection_live, collection_history, evt_end)
+
+            print("\n\n")
+            if i != 3:
+                input("continue..")
+
+    finally:
+        input("press enter to close program..")
+        evt_end.set()
+        print("everything's done")

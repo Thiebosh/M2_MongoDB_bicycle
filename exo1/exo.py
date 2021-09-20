@@ -71,7 +71,7 @@ def get_lille():
     return filteredFields
 
 
-def exo1(collection, _):
+def exo1(collection, *_):
     collection.delete_many({})
     print("live DB cleaned")
 
