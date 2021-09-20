@@ -3,22 +3,56 @@ import json
 from datetime import datetime
 from pymongo import UpdateOne, InsertOne
 from pymongo.errors import BulkWriteError
+
+
 # from bson.objectid import ObjectId
+
+def update_Lyon():
+    url = "https://transport.data.gouv.fr/gbfs/lyon/station_status.json"
+
+    response = request("GET", url)
+
+    response_json = json.loads(response.text.encode("utf8"))
+
+    filteredFields = [{"_id": f"Lyon_{fields['station_id']}",
+                       "nbvelosdispo": fields["num_bikes_available"],
+                       "nbplacesdispo": fields["num_docks_available"]}
+                      for fields in response_json["data"]["stations"]]
+
+    return filteredFields
+
+
+def update_montpellier():
+    url = "https://data.opendatasoft.com/api/records/1.0/search/?dataset=disponibilite-des-places-velomagg-en-temps" \
+          "-reel%40occitanie&q=&rows=100 "
+
+    response = request("GET", url)
+
+    response_json = json.loads(response.text.encode("utf8"))
+
+    allFields = [record["fields"] for record in response_json["records"]]
+
+    filteredFields = [{"_id": f"Montpellier_{fields['id']}",
+                       "nbvelosdispo": fields["av"],
+                       "nbplacesdispo": fields["fr"]}
+                      for fields in allFields]
+
+    return filteredFields
 
 
 def update_lille():
     url = "https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=400"
 
     response = request("GET", url)
-    
+
     response_json = json.loads(response.text.encode("utf8"))
 
     allFields = [record["fields"] for record in response_json["records"]]
 
-    filteredFields = [{"_id" : f"Lille_{fields['libelle']}",
-                    "nbvelosdispo" : fields["nbvelosdispo"],
-                    "nbplacesdispo" : fields["nbplacesdispo"]}
-                    for fields in allFields]
+    filteredFields = [{"_id": f"Lille_{fields['libelle']}",
+                       "nbvelosdispo": fields["nbvelosdispo"],
+                       "nbplacesdispo": fields["nbplacesdispo"]}
+                      for fields in allFields]
 
     return filteredFields
 
@@ -26,18 +60,18 @@ def update_lille():
 def exo2(collection_live, collection_history):
     print("collect dynamic api's datas...")
     datas = update_lille()
-    datas += [] # lyon
-    datas += [] # montpellier
+    datas += update_Lyon()
+    datas += update_montpellier()
 
     try:
         result = collection_live.bulk_write([
-                UpdateOne(
-                    { "_id": data["_id"] },
-                    { "$set": {
-                        "nbvelosdispo": data["nbvelosdispo"],
-                        "nbplacesdispo": data["nbplacesdispo"]
-                    } }
-                )
+            UpdateOne(
+                {"_id": data["_id"]},
+                {"$set": {
+                    "nbvelosdispo": data["nbvelosdispo"],
+                    "nbplacesdispo": data["nbplacesdispo"]
+                }}
+            )
             for data in datas]).bulk_api_result
 
         print(f"=> Live collection - updated {result['nModified']}/{result['nMatched']}/{len(datas)} lines")
@@ -54,12 +88,12 @@ def exo2(collection_live, collection_history):
     try:
         insert_timestamp = datetime.utcnow()
         result = collection_history.bulk_write([
-                InsertOne({
-                    "station_id": data["_id"],
-                    "nbvelosdispo": data["nbvelosdispo"],
-                    "nbplacesdispo": data["nbplacesdispo"],
-                    "record_timestamp": insert_timestamp
-                })
+            InsertOne({
+                "station_id": data["_id"],
+                "nbvelosdispo": data["nbvelosdispo"],
+                "nbplacesdispo": data["nbplacesdispo"],
+                "record_timestamp": insert_timestamp
+            })
             for data in datas]).bulk_api_result
 
         print(f"=> History collection - updated {result['nInserted']}/{len(datas)} lines")
