@@ -63,9 +63,12 @@ def update_lille():
 
 def refresh(collection_live, collection_history):
     datas = update_lille()
+    print("Lille done")
     datas += update_Lyon()
+    print("Lyon done")
     datas += update_montpellier()
-
+    print("Montpellier done")
+    
     try:
         result = collection_live.bulk_write([
             UpdateOne(
