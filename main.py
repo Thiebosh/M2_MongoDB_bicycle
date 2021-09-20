@@ -25,16 +25,15 @@ def connectDB(jsonFile):
 
 
 if __name__ == "__main__":
-    collection = connectDB("credentials.json").TP1.exo
+    client = connectDB("credentials.json").TP1
+    collection_live = client.live
+    collection_history = client.history
     print("server's connection established")
     
-    collection.delete_many({})
-    print("DB cleaned")
-    
-    for i, exo in enumerate([exo1, exo2, exo3]):  #, exo2, exo3, exo4]):
+    for i, exo in enumerate([exo1, exo2, exo3]):
         print(f"exo {i+1}:\n\n")
 
-        exo(collection)
+        exo(collection_live, collection_history)
 
         print("\n\n")
         if i != 3:

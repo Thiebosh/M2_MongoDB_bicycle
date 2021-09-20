@@ -12,7 +12,7 @@ def get_lille():
 
     allFields = [{**record["fields"], "geometry": record["geometry"]} for record in response_json["records"]]
 
-    filteredFields = [{"_id" : fields["libelle"],
+    filteredFields = [{"_id" : f"Lille_{fields['libelle']}",
                     "ville" : "Lille",
                     "nom" : fields["nom"],
                     "nbvelosdispo" : 0,
@@ -25,7 +25,10 @@ def get_lille():
 
     return filteredFields
 
-def exo1(collection):
+def exo1(collection, _):
+    collection.delete_many({})
+    print("live DB cleaned")
+
     print("create geo index for 'geometry' field...")
     result = collection.create_index([("geometry", "2dsphere")])
     print(f"=> index name : {result}")

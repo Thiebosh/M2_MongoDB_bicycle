@@ -1,6 +1,7 @@
 from requests import request
 import json
-from pymongo import UpdateOne
+from datetime import datetime
+from pymongo import UpdateOne, InsertOne
 from pymongo.errors import BulkWriteError
 # from bson.objectid import ObjectId
 
@@ -14,7 +15,7 @@ def update_lille():
 
     allFields = [record["fields"] for record in response_json["records"]]
 
-    filteredFields = [{"_id" : fields["libelle"],
+    filteredFields = [{"_id" : f"Lille_{fields['libelle']}",
                     "nbvelosdispo" : fields["nbvelosdispo"],
                     "nbplacesdispo" : fields["nbplacesdispo"]}
                     for fields in allFields]
@@ -22,44 +23,55 @@ def update_lille():
     return filteredFields
 
 
-def exo2(collection):
+def exo2(collection_live, collection_history):
     print("collect dynamic api's datas...")
     datas = update_lille()
     datas += [] # lyon
     datas += [] # montpellier
 
     try:
-        # result = collection.update_many(
-        #     {
-        #         "_id": {
-        #             "$in": [data["_id"] for data in datas]
-        #         }
-        #     },
-        #     {
-        #         "$set" : {
-        #             "nbvelosdispo": [data["nbvelosdispo"] for data in datas],
-        #             "nbplacesdispo": [data["nbplacesdispo"] for data in datas]
-        #         }
-        #     }
-        # )
-
-        # print(f"=> updated {result.modified_count}/{result.matched_count}/{len(datas)} lines")
-
-        result = collection.bulk_write([
+        result = collection_live.bulk_write([
                 UpdateOne(
                     { "_id": data["_id"] },
                     { "$set": {
-                            "nbvelosdispo": data["nbvelosdispo"],
-                            "nbplacesdispo": data["nbplacesdispo"]
+                        "nbvelosdispo": data["nbvelosdispo"],
+                        "nbplacesdispo": data["nbplacesdispo"]
                     } }
                 )
             for data in datas]).bulk_api_result
 
-        print(f"=> updated {result['nModified']}/{result['nMatched']}/{len(datas)} lines")
+        print(f"=> Live collection - updated {result['nModified']}/{result['nMatched']}/{len(datas)} lines")
 
     except BulkWriteError as bwe:
-        print(bwe.details.writeErrors)
+        print("Live collection - bulk_write error :")
+        print(f"Index : {bwe.details['writeErrors']['index']}")
+        print(f"Message : {bwe.details['writeErrors']['errmsg']}")
 
     except Exception as e:
         print("something went wrong...")
         print(e)
+
+    try:
+        insert_timestamp = datetime.utcnow()
+        result = collection_history.bulk_write([
+                InsertOne({
+                    "station_id": data["_id"],
+                    "nbvelosdispo": data["nbvelosdispo"],
+                    "nbplacesdispo": data["nbplacesdispo"],
+                    "record_timestamp": insert_timestamp
+                })
+            for data in datas]).bulk_api_result
+
+        print(f"=> History collection - updated {result['nInserted']}/{len(datas)} lines")
+
+    except BulkWriteError as bwe:
+        print("History collection - bulk_write error :")
+        print(f"Index : {bwe.details['writeErrors']['index']}")
+        print(f"Message : {bwe.details['writeErrors']['errmsg']}")
+
+    except Exception as e:
+        print("something went wrong...")
+        print(e)
+
+    # history : collection à part avec historique des données mises à jour => trois champs envoyés pour être tranquille + date
+    # id : pas forcément numérique => peut préfixer avec nom ville pour éviter collisions
