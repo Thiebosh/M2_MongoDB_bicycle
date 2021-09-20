@@ -153,3 +153,12 @@ transformations :
 
 **god mod**
 solution ultime : https://developer.jcdecaux.com/#/opendata/vls?page=dynamic
+
+
+
+**elements pour q4**
+1 - index sur nom (voire ville)
+2 - modif de champs (libre ou imposé) => 1 seul
+3 - supprimer une ou toutes les entrées de table live ? ou history ? ou données "anciennes de history" ? => suppression d'une ou plusieurs stations + historique / éventuellement purge d'historique
+4 - desactivate ?? => trouvable / pas trouvable pour le 1 => tous ou partie => sélection de zone par polygone
+5 - utiliser fonctions mongo => se renseigner

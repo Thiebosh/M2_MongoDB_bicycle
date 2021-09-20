@@ -4,24 +4,21 @@ from datetime import datetime
 from pymongo import UpdateOne, InsertOne
 from pymongo.errors import BulkWriteError
 
-
-# from bson.objectid import ObjectId
-
 import threading
 from time import sleep
+
+
+def dowload(url):
+    return json.loads(request("GET", url).text.encode("utf8"))
 
 
 def update_Lyon():
     url = "https://transport.data.gouv.fr/gbfs/lyon/station_status.json"
 
-    response = request("GET", url)
-
-    response_json = json.loads(response.text.encode("utf8"))
-
     filteredFields = [{"_id": f"Lyon_{fields['station_id']}",
                        "nbvelosdispo": fields["num_bikes_available"],
                        "nbplacesdispo": fields["num_docks_available"]}
-                      for fields in response_json["data"]["stations"]]
+                      for fields in dowload(url)["data"]["stations"]]
 
     return filteredFields
 
@@ -30,11 +27,7 @@ def update_montpellier():
     url = "https://data.opendatasoft.com/api/records/1.0/search/?dataset=disponibilite-des-places-velomagg-en-temps" \
           "-reel%40occitanie&q=&rows=100 "
 
-    response = request("GET", url)
-
-    response_json = json.loads(response.text.encode("utf8"))
-
-    allFields = [record["fields"] for record in response_json["records"]]
+    allFields = [record["fields"] for record in dowload(url)["records"]]
 
     filteredFields = [{"_id": f"Montpellier_{fields['id']}",
                        "nbvelosdispo": fields["av"],
@@ -47,11 +40,7 @@ def update_montpellier():
 def update_lille():
     url = "https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=400"
 
-    response = request("GET", url)
-
-    response_json = json.loads(response.text.encode("utf8"))
-
-    allFields = [record["fields"] for record in response_json["records"]]
+    allFields = [record["fields"] for record in dowload(url)["records"]]
 
     filteredFields = [{"_id": f"Lille_{fields['libelle']}",
                        "nbvelosdispo": fields["nbvelosdispo"],
@@ -63,11 +52,8 @@ def update_lille():
 
 def refresh(collection_live, collection_history):
     datas = update_lille()
-    print("Lille done")
     datas += update_Lyon()
-    print("Lyon done")
     datas += update_montpellier()
-    print("Montpellier done")
     
     try:
         result = collection_live.bulk_write([
