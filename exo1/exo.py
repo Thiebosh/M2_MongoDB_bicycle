@@ -16,10 +16,8 @@ def get_from_api(path):
         if not type(key) == dict:
             accessed = accessed[key]
 
-        elif "lambda" in key:
-            ldic = locals()
-            exec(key["lambda"].replace("{}", "accessed"), globals(), ldic)
-            accessed = ldic["accessed"]
+        elif "unpack" in key:
+            accessed = [record[key["unpack"]] for record in accessed]
 
     mapper = api["fields_mapper"]
     return [{
