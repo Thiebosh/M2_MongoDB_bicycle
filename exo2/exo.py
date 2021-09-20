@@ -1,56 +1,34 @@
 from pymongo import UpdateOne, InsertOne
 from pymongo.errors import BulkWriteError
 from datetime import datetime
+from os import listdir
 
 import threading
 from time import sleep
 
 from utils.utils import download
+from utils.utils import readJson
+from utils.utils import access_data
 
 
-def update_Lyon():
-    url = "https://transport.data.gouv.fr/gbfs/lyon/station_status.json"
+def update_from_api(path):
+    api = readJson(path)["dynamic"]
 
-    filteredFields = [{"_id": f"Lyon_{fields['station_id']}",
-                       "nbvelosdispo": fields["num_bikes_available"],
-                       "nbplacesdispo": fields["num_docks_available"]}
-                      for fields in download(url)["data"]["stations"]]
+    accessed = access_data(download(api['url']), api["data_access"])
 
-    return filteredFields
-
-
-def update_montpellier():
-    url = "https://data.opendatasoft.com/api/records/1.0/search/?dataset=disponibilite-des-places-velomagg-en-temps" \
-          "-reel%40occitanie&q=&rows=100 "
-
-    allFields = [record["fields"] for record in download(url)["records"]]
-
-    filteredFields = [{"_id": f"Montpellier_{fields['id']}",
-                       "nbvelosdispo": fields["av"],
-                       "nbplacesdispo": fields["fr"]}
-                      for fields in allFields]
-
-    return filteredFields
-
-
-def update_lille():
-    url = "https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=400"
-
-    allFields = [record["fields"] for record in download(url)["records"]]
-
-    filteredFields = [{"_id": f"Lille_{fields['libelle']}",
-                       "nbvelosdispo": fields["nbvelosdispo"],
-                       "nbplacesdispo": fields["nbplacesdispo"]}
-                      for fields in allFields]
-
-    return filteredFields
+    mapper = api["fields_mapper"]
+    return [{
+                "_id": f"{mapper['ville']}_{fields[mapper['_id']]}",
+                "nbvelosdispo": fields[mapper['nbvelosdispo']],
+                "nbplacesdispo": fields[mapper['nbplacesdispo']]
+            } for fields in accessed]
 
 
 def refresh(collection_live, collection_history):
-    datas = update_lille()
-    datas += update_Lyon()
-    datas += update_montpellier()
-    
+    datas = []
+    for file in listdir("apis"):
+        datas += update_from_api(f"apis/{file}")
+
     try:
         result = collection_live.bulk_write([
             UpdateOne(
@@ -84,7 +62,7 @@ def refresh(collection_live, collection_history):
             })
             for data in datas]).bulk_api_result
 
-        print(f"=> History collection - updated {result['nInserted']}/{len(datas)} lines")
+        print(f"=> History collection - inserted {result['nInserted']}/{len(datas)} lines")
 
     except BulkWriteError as bwe:
         print("History collection - bulk_write error :")

@@ -18,18 +18,12 @@ def download(url):
     return json.loads(request("GET", url).text.encode("utf8"))
 
 
-def interpreter(field, fields, mapper):
-    atomic_mapper = mapper[field]
-    
-    if not type(atomic_mapper) == dict:
-        return fields[atomic_mapper]
-    
-    elif "addition" in atomic_mapper:
-        atomic_mapper = atomic_mapper["addition"]
-        return fields[atomic_mapper[0]] + fields[atomic_mapper[1]]
-    
-    elif "var" in atomic_mapper and "pos" in atomic_mapper:
-        return fields[atomic_mapper["var"]][atomic_mapper["pos"]]
+def access_data(accessed, actions):
+    for key in actions:
+        if not type(key) == dict:
+            accessed = accessed[key]
 
-    print(f"bad json structure : no interpretation for {mapper}")
-    exit(1)
+        elif "unpack" in key:
+            accessed = [record[key["unpack"]] for record in accessed]
+
+    return accessed

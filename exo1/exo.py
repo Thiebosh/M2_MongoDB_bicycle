@@ -3,21 +3,32 @@ from os import listdir
 
 from utils.utils import download
 from utils.utils import readJson
-from utils.utils import interpreter
+from utils.utils import access_data
 
 
-def get_from_api(path):
-    api = readJson(path)
+def interpreter(field, fields, mapper):
+    atomic_mapper = mapper[field]
+    
+    if not type(atomic_mapper) == dict:
+        return fields[atomic_mapper]
+    
+    elif "addition" in atomic_mapper:
+        atomic_mapper = atomic_mapper["addition"]
+        return fields[atomic_mapper[0]] + fields[atomic_mapper[1]]
+    
+    elif "var" in atomic_mapper and "pos" in atomic_mapper:
+        return fields[atomic_mapper["var"]][atomic_mapper["pos"]]
+
+    print(f"bad json structure : no interpretation for {mapper}")
+    exit(1)
+
+
+def insert_from_api(path):
+    api = readJson(path)["static"]
 
     print(f"starting {api['fields_mapper']['ville']}...")
 
-    accessed = download(api['url'])
-    for key in api["data_access"]:
-        if not type(key) == dict:
-            accessed = accessed[key]
-
-        elif "unpack" in key:
-            accessed = [record[key["unpack"]] for record in accessed]
+    accessed = access_data(download(api['url']), api["data_access"])
 
     mapper = api["fields_mapper"]
     return [{
@@ -47,7 +58,7 @@ def exo1(collection, *_):
     print("\nCollect static api's datas...")
     datas = []
     for file in listdir("apis"):
-        datas += get_from_api(f"apis/{file}")
+        datas += insert_from_api(f"apis/{file}")
 
     print("Collect done - uploading...")
     try:

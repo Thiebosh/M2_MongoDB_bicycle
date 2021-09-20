@@ -1,17 +1,34 @@
 {
-    "url": "https://data.opendatasoft.com/api/records/1.0/search/?dataset=disponibilite-des-places-velomagg-en-temps-reel%40occitanie&q=&rows=100",
-    "data_access": [
-        "records",
-        {
-            "unpack": "fields"
+    "static": {
+        "url": "https://data.opendatasoft.com/api/records/1.0/search/?dataset=disponibilite-des-places-velomagg-en-temps-reel%40occitanie&q=&rows=100",
+        "data_access": [
+            "records",
+            {
+                "unpack": "fields"
+            }
+        ],
+        "fields_mapper": {
+            "_id": "id",
+            "ville": "Montpellier",
+            "nom": "na",
+            "nbplacestotal": "to",
+            "longitude": "lg",
+            "latitude": "la"
         }
-    ],
-    "fields_mapper": {
-        "_id": "id",
-        "ville": "Montpellier",
-        "nom": "na",
-        "nbplacestotal": "to",
-        "longitude": "lg",
-        "latitude": "la"
+    },
+    "dynamic": {
+        "url": "https://data.opendatasoft.com/api/records/1.0/search/?dataset=disponibilite-des-places-velomagg-en-temps-reel%40occitanie&q=&rows=100",
+        "data_access": [
+            "records",
+            {
+                "unpack": "fields"
+            }
+        ],
+        "fields_mapper": {
+            "_id": "id",
+            "ville": "Montpellier",
+            "nbvelosdispo": "av",
+            "nbplacesdispo": "fr"
+        }
     }
 }
