@@ -1,0 +1,15 @@
+{
+    "url": "https://transport.data.gouv.fr/gbfs/lyon/station_information.json",
+    "data_access": [
+        "data",
+        "stations"
+    ],
+    "fields_mapper": {
+        "_id": "station_id",
+        "ville": "Lyon",
+        "nom": "name",
+        "nbplacestotal": "capacity",
+        "longitude": "lon",
+        "latitude": "lat"
+    }
+}

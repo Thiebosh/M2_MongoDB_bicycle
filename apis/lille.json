@@ -1,0 +1,25 @@
+{
+    "url": "https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=400",
+    "data_access": [
+        "records",
+        {
+            "lambda": "{} = [record['fields'] for record in {}]"
+        }
+    ],
+    "fields_mapper": {
+        "_id": "libelle",
+        "ville": "Lille",
+        "nom": "nom",
+        "nbplacestotal": {
+            "addition" : ["nbvelosdispo", "nbplacesdispo"]
+        },
+        "longitude": {
+            "var": "geo",
+            "pos": 1
+        },
+        "latitude": {
+            "var": "geo",
+            "pos": 0
+        }
+    }
+}

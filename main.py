@@ -1,7 +1,6 @@
 from pymongo import MongoClient
-import json
-import os
 from threading import Event
+from utils.utils import readJson
 
 from exo1.exo import exo1
 from exo2.exo import exo2
@@ -10,14 +9,8 @@ from exo4.exo import exo4
 
 
 def connectDB(jsonFile):
-    if not os.path.exists(jsonFile):
-        print(f"Cannot found '{jsonFile}' file, close program.")
-        exit(1)
-    
-    with open(jsonFile) as file:
-        content = file.read()
+    creds = readJson(jsonFile)
 
-    creds = json.loads(content)
     if set(creds.keys()) != set(['username', 'password', 'dbAccess']):
         print(f"Missing keys in your '{jsonFile}' file, close program.")
         exit(1)
@@ -34,16 +27,14 @@ if __name__ == "__main__":
     evt_end = Event()
 
     try:
-        for i, exo in enumerate([exo1, exo2, exo3]):
-            print(f"exo {i+1}:\n\n")
+        for i, exo in enumerate([exo1, exo3]):
+            print(f"\nexo {i+1}:")
 
             exo(collection_live, collection_history, evt_end)
 
-            print("\n\n")
-            if i != 3:
-                input("continue..")
+            input("\nContinue...")
 
     finally:
-        input("press enter to close program..")
+        input("press enter to close program...")
         evt_end.set()
         print("everything's done")

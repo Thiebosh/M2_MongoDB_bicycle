@@ -1,15 +1,11 @@
-from requests import request
-import json
-from datetime import datetime
 from pymongo import UpdateOne, InsertOne
 from pymongo.errors import BulkWriteError
+from datetime import datetime
 
 import threading
 from time import sleep
 
-
-def dowload(url):
-    return json.loads(request("GET", url).text.encode("utf8"))
+from utils.utils import download
 
 
 def update_Lyon():
@@ -18,7 +14,7 @@ def update_Lyon():
     filteredFields = [{"_id": f"Lyon_{fields['station_id']}",
                        "nbvelosdispo": fields["num_bikes_available"],
                        "nbplacesdispo": fields["num_docks_available"]}
-                      for fields in dowload(url)["data"]["stations"]]
+                      for fields in download(url)["data"]["stations"]]
 
     return filteredFields
 
@@ -27,7 +23,7 @@ def update_montpellier():
     url = "https://data.opendatasoft.com/api/records/1.0/search/?dataset=disponibilite-des-places-velomagg-en-temps" \
           "-reel%40occitanie&q=&rows=100 "
 
-    allFields = [record["fields"] for record in dowload(url)["records"]]
+    allFields = [record["fields"] for record in download(url)["records"]]
 
     filteredFields = [{"_id": f"Montpellier_{fields['id']}",
                        "nbvelosdispo": fields["av"],
@@ -40,7 +36,7 @@ def update_montpellier():
 def update_lille():
     url = "https://opendata.lillemetropole.fr/api/records/1.0/search/?dataset=vlille-realtime&q=&rows=400"
 
-    allFields = [record["fields"] for record in dowload(url)["records"]]
+    allFields = [record["fields"] for record in download(url)["records"]]
 
     filteredFields = [{"_id": f"Lille_{fields['libelle']}",
                        "nbvelosdispo": fields["nbvelosdispo"],
@@ -104,7 +100,7 @@ def worker(collection_live, collection_history, evt_end):
     try:
         while not evt_end.is_set():
             refresh(collection_live, collection_history)
-            sleep(2) # seconds
+            sleep(60) # seconds
 
     finally:
         print("close thread")
