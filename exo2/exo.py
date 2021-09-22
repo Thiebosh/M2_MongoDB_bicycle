@@ -11,23 +11,18 @@ from utils.utils import readJson
 from utils.utils import access_data
 
 
-def update_from_api(path):
-    api = readJson(path)["dynamic"]
-
-    accessed = access_data(download(api['url']), api["data_access"])
-
+def update_from_api(api):
     mapper = api["fields_mapper"]
     return [{
                 "_id": f"{mapper['ville']}_{fields[mapper['_id']]}",
                 "nbvelosdispo": fields[mapper['nbvelosdispo']],
                 "nbplacesdispo": fields[mapper['nbplacesdispo']]
-            } for fields in accessed]
+            } for fields in access_data(download(api['url']), api["data_access"])]
 
 
-def refresh(collection_live, collection_history):
-    datas = []
-    for file in listdir("apis"):
-        datas += update_from_api(f"apis/{file}")
+def refresh(api, collection_live, collection_history):
+    datas = update_from_api(api)
+    town = api['fields_mapper']['ville']
 
     try:
         result = collection_live.bulk_write([
@@ -40,10 +35,11 @@ def refresh(collection_live, collection_history):
             )
             for data in datas]).bulk_api_result
 
-        print(f"=> Live collection - updated {result['nModified']}/{result['nMatched']}/{len(datas)} lines")
+        print(f"=> '{town}' - Live collection - " +
+            f"updated {result['nModified']}/{result['nMatched']}/{len(datas)} lines")
 
     except BulkWriteError as bwe:
-        print("Live collection - bulk_write error :")
+        print(f"'{town}' - Live collection - bulk_write error :")
         print(f"Index : {bwe.details['writeErrors']['index']}")
         print(f"Message : {bwe.details['writeErrors']['errmsg']}")
 
@@ -62,10 +58,10 @@ def refresh(collection_live, collection_history):
             })
             for data in datas]).bulk_api_result
 
-        print(f"=> History collection - inserted {result['nInserted']}/{len(datas)} lines")
+        print(f"=> '{town}' - History collection - inserted {result['nInserted']}/{len(datas)} lines")
 
     except BulkWriteError as bwe:
-        print("History collection - bulk_write error :")
+        print(f"'{town}' - History collection - bulk_write error :")
         print(f"Index : {bwe.details['writeErrors']['index']}")
         print(f"Message : {bwe.details['writeErrors']['errmsg']}")
 
@@ -74,16 +70,21 @@ def refresh(collection_live, collection_history):
         print(e)
 
 
-def worker(collection_live, collection_history, evt_end):
+def worker(path, collection_live, collection_history, evt_end):
+    api = readJson(path)["dynamic"]
+    town = api['fields_mapper']['ville']
+    print(f"start refresh worker '{town}'")
+
     try:
         while not evt_end.is_set():
-            refresh(collection_live, collection_history)
-            sleep(60) # seconds
+            refresh(api, collection_live, collection_history)
+            sleep(api["refresh_time"]) # seconds
 
     finally:
-        print("close thread")
+        print(f"close refresh worker '{town}'")
         evt_end.set()
 
 
 def exo2(collection_live, collection_history, evt_end):
-    threading.Thread(target=worker, args=(collection_live, collection_history, evt_end)).start()
+    for file in listdir("apis"):
+        threading.Thread(target=worker, args=(f"apis/{file}", collection_live, collection_history, evt_end)).start()

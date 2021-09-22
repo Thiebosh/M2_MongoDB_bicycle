@@ -27,7 +27,7 @@ if __name__ == "__main__":
     evt_end = Event()
 
     try:
-        for i, exo in enumerate([exo1, exo3]):
+        for i, exo in enumerate([exo1, exo2, exo3]):
             print(f"\nexo {i+1}:")
 
             exo(collection_live, collection_history, evt_end)

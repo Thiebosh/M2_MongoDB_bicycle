@@ -29,6 +29,7 @@
             "ville": "Montpellier",
             "nbvelosdispo": "av",
             "nbplacesdispo": "fr"
-        }
+        },
+        "refresh_time": 60
     }
 }

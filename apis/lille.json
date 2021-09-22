@@ -37,6 +37,7 @@
             "ville": "Lille",
             "nbvelosdispo": "nbvelosdispo",
             "nbplacesdispo": "nbplacesdispo"
-        }
+        },
+        "refresh_time": 60
     }
 }

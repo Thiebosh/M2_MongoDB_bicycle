@@ -28,8 +28,6 @@ def insert_from_api(path):
 
     print(f"starting {api['fields_mapper']['ville']}...")
 
-    accessed = access_data(download(api['url']), api["data_access"])
-
     mapper = api["fields_mapper"]
     return [{
                 "_id": f"{mapper['ville']}_{fields[mapper['_id']]}",
@@ -44,7 +42,7 @@ def insert_from_api(path):
                         interpreter("longitude", fields, mapper),
                         interpreter("latitude", fields, mapper)
                 ]}
-            } for fields in accessed]
+            } for fields in access_data(download(api['url']), api["data_access"])]
 
 
 def exo1(collection, *_):

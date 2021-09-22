@@ -25,6 +25,7 @@
             "ville": "Lyon",
             "nbvelosdispo": "num_bikes_available",
             "nbplacesdispo": "num_docks_available"
-        }
+        },
+        "refresh_time": 60
     }
 }
