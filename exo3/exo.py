@@ -58,7 +58,20 @@ def exo3(collection, _, coordinates, minDistance, maxDistance, *__):
             {
                 "$project": {
                     **projection,
-                    "distance": 1
+                    "distance": {
+                        "$concat": [
+                            {
+                                "$substr": [
+                                    {
+                                        "$round": ["$distance", 2]
+                                    },
+                                    0,
+                                    -1
+                                ]
+                            },
+                            " mètres"
+                        ]
+                    }
                 }
             },
             {
