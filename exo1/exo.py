@@ -68,4 +68,5 @@ def exo1(collection, *_):
 
     except Exception as e:
         print("something went wrong...")
+        print(type(e))
         print(e)

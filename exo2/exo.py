@@ -45,6 +45,7 @@ def refresh(api, collection_live, collection_history):
 
     except Exception as e:
         print("something went wrong...")
+        print(type(e))
         print(e)
 
     try:
@@ -67,6 +68,7 @@ def refresh(api, collection_live, collection_history):
 
     except Exception as e:
         print("something went wrong...")
+        print(type(e))
         print(e)
 
 
@@ -87,4 +89,5 @@ def worker(path, collection_live, collection_history, evt_end):
 
 def exo2(collection_live, collection_history, evt_end):
     for file in listdir("apis"):
-        threading.Thread(target=worker, args=(f"apis/{file}", collection_live, collection_history, evt_end)).start()
+        args = (f"apis/{file}", collection_live, collection_history, evt_end)
+        threading.Thread(target=worker, args=args).start()

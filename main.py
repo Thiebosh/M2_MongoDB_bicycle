@@ -27,14 +27,45 @@ if __name__ == "__main__":
     evt_end = Event()
 
     try:
-        for i, exo in enumerate([exo1, exo2, exo3]):
+        exos = [
+            # {
+            #     "ptr": exo1,
+            #     "args" : ()
+            # },
+            # {
+            #     "ptr": exo2,
+            #     "args" : (evt_end, ) # add thread collector to kill them at end?
+            # },
+            {
+                "ptr": exo3,
+                "args" : ([3.0485, 50.6342], 0, 300)
+            }
+            # {
+            #     "ptr": exo4,
+            #     "args" : ()
+            # }
+        ]
+        end = len(exos) - 1
+
+        for i, exo in enumerate(exos):
             print(f"\nexo {i+1}:")
 
-            exo(collection_live, collection_history, evt_end)
+            exo["ptr"](collection_live, collection_history, *exo["args"])
 
-            input("\nContinue...")
+            if i != end:
+                input("\nContinue...")
+
+        # exos = [exo3]
+        # end = len(exos) - 1
+        # for i, exo in enumerate(exos):
+        #     print(f"\nexo {i+1}:")
+
+        #     exo(collection_live, collection_history, evt_end)
+
+        #     if i != end:
+        #         input("\nContinue...")
 
     finally:
-        input("press enter to close program...")
+        input("\nPress enter to close program...")
         evt_end.set()
         print("everything's done")
