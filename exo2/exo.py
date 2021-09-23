@@ -90,4 +90,6 @@ def worker(path, collection_live, collection_history, evt_end):
 def exo2(collection_live, collection_history, evt_end):
     for file in listdir("apis"):
         args = (f"apis/{file}", collection_live, collection_history, evt_end)
-        threading.Thread(target=worker, args=args).start()
+        thread = (threading.Thread(target=worker, args=args))
+        thread.setDaemon(True)
+        thread.start()
