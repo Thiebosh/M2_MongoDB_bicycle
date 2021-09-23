@@ -38,7 +38,7 @@ if __name__ == "__main__":
             # },
             {
                 "ptr": exo3,
-                "args" : ([3.0485, 50.6342], 0, 300)
+                "args" : ([3.0485, 50.6342], 0, 400, 3) # triangule utilisateur
             }
             # {
             #     "ptr": exo4,

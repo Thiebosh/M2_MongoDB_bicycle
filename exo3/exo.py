@@ -1,6 +1,6 @@
 from pprint import pprint
 
-def exo3(collection, _, coordinates, minDistance, maxDistance, *__):
+def exo3(collection, _, coordinates, minDistance, maxDistance, closest, *__):
     print("print some data")
     filter = {
         "geometry": { 
@@ -26,7 +26,7 @@ def exo3(collection, _, coordinates, minDistance, maxDistance, *__):
     }
 
     # try:
-    #     for element in collection.find(filter, projection).limit(3): # triangule utilisateur
+    #     for element in collection.find(filter, projection).limit(closest):
     #         print(element)
     # except Exception as e:
     #     print("something went wrong...")
@@ -51,7 +51,7 @@ def exo3(collection, _, coordinates, minDistance, maxDistance, *__):
             {
                 "$match": {
                     "nbvelosdispo": {
-                        "$gte": 0
+                        "$gt": 0
                     }
                 }
             },
@@ -71,6 +71,56 @@ def exo3(collection, _, coordinates, minDistance, maxDistance, *__):
                             },
                             " mètres"
                         ]
+                    },
+                    "direction": {
+                        "$let": {
+                            "vars": {
+                                "lon": {
+                                    "$arrayElemAt": ["$geometry.coordinates", 0]
+                                },
+                                "lat": {
+                                    "$arrayElemAt": ["$geometry.coordinates", 1]
+                                }
+                            },
+                            "in": {
+                                "$concat": [
+                                    {
+                                        "$cond": {
+                                            "if": {
+                                                "$eq": ["$$lat", coordinates[1]]
+                                            },
+                                            "then": "",
+                                            "else": {
+                                                "$cond": {
+                                                    "if": {
+                                                        "$gt": ["$$lat", coordinates[1]]
+                                                    },
+                                                    "then": "Nord ",
+                                                    "else": "Sud "
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "$cond": {
+                                            "if": {
+                                                "$eq": ["$$lon", coordinates[0]]
+                                            },
+                                            "then": "",
+                                            "else": {
+                                                "$cond": {
+                                                    "if": {
+                                                        "$lt": ["$$lon", coordinates[0]]
+                                                    },
+                                                    "then": "Ouest",
+                                                    "else": "Est"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
                     }
                 }
             },
@@ -78,7 +128,7 @@ def exo3(collection, _, coordinates, minDistance, maxDistance, *__):
                 "$facet": {
                     "closest_results": [
                         { 
-                            "$limit": 3  # triangulation
+                            "$limit": closest
                         }
                     ],
                     "total": [
