@@ -14,22 +14,24 @@ def showFrame(frames, index):
     frames[index].show()
 
 
-def exo4(*_):
-    app = App(title="Business program")
+def exo4(collection_live, collection_history, *_):
+    try:
+        app = App(title="Business program", height="600", width="800")
+        app.tk.resizable(False, False)  # everything will be absolute
 
-    menu_box = Box(app, align="top", border=True)
+        menu_box = Box(app, align="top", layout="grid", border=True)
 
-    menu_btn = []
-    frames = []
+        frames = []
+        for i in range(5):
+            name = f"step{i+1}"
 
-    for i in range(5):
-        name = f"Step{i+1}"
+            frames.append(Box(app, width=app.width, height="fill", border=True))
+            frames[-1].hide()
 
-        frames.append(Box(app, width="fill", height="fill", border=True))
-        frames[-1].hide()
+            PushButton(menu_box, grid=[i,0], text=name, command=showFrame, args=(frames, i))
 
-        menu_btn.append(PushButton(menu_box, command=showFrame, args=(frames, i), text=name, align="left"))
+            globals()[name](collection_live, collection_history, frames[-1])
 
-        globals()[f"step{i+1}"](frames[-1])
-
-    app.display()
+        app.display()
+    except Exception as e:
+        print(e)
