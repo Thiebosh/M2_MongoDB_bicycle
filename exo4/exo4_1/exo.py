@@ -4,13 +4,13 @@ from guizero import Box, TextBox, ListBox, Text, PushButton
 def searchByTownAndStation(collection, town, station, displayBox):
     displayBox.clear()
 
-    print(town.value)
-    print(station.value)
     filter = {
-        
+        "$text": {
+            "$search": station.value
+        }
     }
 
-    for item in collection.find(filter).limit(2):
+    for item in collection.find(filter):
         displayBox.append(item)
 
 

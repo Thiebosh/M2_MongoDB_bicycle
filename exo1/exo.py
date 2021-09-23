@@ -46,12 +46,27 @@ def insert_from_api(path):
 
 
 def exo1(collection, *_):
-    collection.delete_many({})
-    print("\nLive DB cleaned")
+    try:
+        collection.delete_many({})
+        collection.drop_indexes()
+        print("\nLive DB cleaned")
+    except Exception as e:
+        print("something went wrong...")
+        print(e)
+        exit()
 
-    print("create geo index for 'geometry' field...")
-    result = collection.create_index([("geometry", "2dsphere")])
-    print(f"=> index name : {result}")
+    try:
+        print("\nCreate 2dsphere index for 'geometry' field...")
+        result = collection.create_index([("geometry", "2dsphere")])
+        print(f"=> index name : {result}")
+        
+        print("\nCreate text index for 'name' field...")
+        result = collection.create_index([("nom", "text")])
+        print(f"=> index name : {result}")
+    except Exception as e:
+        print("something went wrong...")
+        print(e)
+        exit()
 
     print("\nCollect static api's datas...")
     datas = []
