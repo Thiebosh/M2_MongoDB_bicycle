@@ -55,16 +55,6 @@ if __name__ == "__main__":
             if i != end:
                 input("\nContinue...")
 
-        # exos = [exo3]
-        # end = len(exos) - 1
-        # for i, exo in enumerate(exos):
-        #     print(f"\nexo {i+1}:")
-
-        #     exo(collection_live, collection_history, evt_end)
-
-        #     if i != end:
-        #         input("\nContinue...")
-
     finally:
         input("\nPress enter to close program...")
         evt_end.set()
