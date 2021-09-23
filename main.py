@@ -32,18 +32,18 @@ if __name__ == "__main__":
             #     "ptr": exo1,
             #     "args" : ()
             # },
-            {
-                "ptr": exo2,
-                "args" : (evt_end, )
-            },
+            # {
+            #     "ptr": exo2,
+            #     "args" : (evt_end, )
+            # },
             # {
             #     "ptr": exo3,
             #     "args" : ([3.0485, 50.6342], 0, 400, 3) # triangule utilisateur
             # }
-            # {
-            #     "ptr": exo4,
-            #     "args" : ()
-            # }
+            {
+                "ptr": exo4,
+                "args" : ()
+            }
         ]
         end = len(exos) - 1
 
@@ -56,6 +56,6 @@ if __name__ == "__main__":
                 input("\nContinue...")
 
     finally:
-        input("\nPress enter to close program...")
+        # input("\nPress enter to close program...")
         evt_end.set()
         print("everything's done")
