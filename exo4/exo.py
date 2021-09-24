@@ -25,10 +25,10 @@ def exo4(collection_live, collection_history, *_):
         for i in range(5):
             name = f"step{i+1}"
 
-            frames.append(Box(app, width=app.width, height="fill", border=True))
+            frames.append(Box(app, width=app.width, height="fill"))
             frames[-1].hide()
 
-            PushButton(menu_box, grid=[i,0], text=name, command=showFrame, args=(frames, i))
+            PushButton(menu_box, width="18", grid=[i,0], text=name, command=showFrame, args=(frames, i))
 
             globals()[name](collection_live, collection_history, frames[-1])
 

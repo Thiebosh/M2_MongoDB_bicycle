@@ -11,21 +11,21 @@ def searchByTownAndStation(collection, town, station, displayBox):
     }
 
     for item in collection.find(filter):
-        displayBox.append(item)
+        displayBox.append(f"{item['ville']} ; {item['nom']}")
 
 
 def step1(collection, _, frame):
     # left screen part
-    resultBox = Box(frame, height="fill", width=int(frame.width/3), align="left", border=True)
+    resultBox = Box(frame, height="fill", width=int(frame.width/3), align="left")
     
-    resultTitle = Box(resultBox, width="fill", border=True)
+    resultTitle = Box(resultBox, width="fill")
     Text(resultTitle, text="Résultats de recherche")
 
     resultList = ListBox(resultBox, height="fill", width=resultBox.width, scrollbar=True)
 
 
     # right screen part
-    mainSection = Box(frame, height="fill", width=int(frame.width*2/3), border=True)
+    mainSection = Box(frame, height="fill", width=int(frame.width*2/3))
     Text(mainSection, text="Recherche de station")
 
     Box(mainSection, height="40")  # margin
