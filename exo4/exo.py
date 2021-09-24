@@ -1,7 +1,8 @@
-from guizero import App, Box, PushButton
+from guizero import App, Box, TextBox, ListBox, Text, PushButton
 # from bson.objectid import ObjectId
 
-from exo4.exo4_1.exo import step1
+# import des logiques
+from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import step2
 from exo4.exo4_3.exo import step3
 from exo4.exo4_4.exo import step4
@@ -14,24 +15,92 @@ def showFrame(frames, index):
     frames[index].show()
 
 
-def exo4(collection_live, collection_history, *_):
-    try:
-        app = App(title="Business program", height="600", width="800")
-        app.tk.resizable(False, False)  # everything will be absolute
+class exo4:
+    def __init__(self, collection_live, collection_history, *_):
+        self.collection_live = collection_live
+        self.collection_history = collection_history
+        self.resultList = []
+        self.resultContainer = None
 
-        menu_box = Box(app, align="top", layout="grid", border=True)
+        try:
+            app = App(title="Business program", height="600", width="800")
+            app.tk.resizable(False, False)  # everything will be absolutely relative
 
-        frames = []
-        for i in range(5):
-            name = f"step{i+1}"
+            self.createLeftScreen(app)
 
-            frames.append(Box(app, width=app.width, height="fill"))
-            frames[-1].hide()
+            self.createRightScreen(app)
 
-            PushButton(menu_box, width="18", grid=[i,0], text=name, command=showFrame, args=(frames, i))
 
-            globals()[name](collection_live, collection_history, frames[-1])
+            # menu_box = Box(app, align="top", layout="grid", border=True)
 
-        app.display()
-    except Exception as e:
-        print(e)
+            # frames = []
+            # for i in range(5):
+            #     name = f"step{i+1}"
+
+            #     frames.append(Box(app, width=app.width, height="fill"))
+            #     frames[-1].hide()
+
+            #     PushButton(menu_box, width="18", grid=[i,0], text=name, command=showFrame, args=(frames, i))
+
+            #     globals()[name](collection_live, collection_history, frames[-1])
+
+            app.display()
+        except Exception as e:
+            print(e)
+
+
+    def createLeftScreen(self, container):
+        resultBox = Box(container, height="fill", width=int(container.width/3), align="left")
+
+        resultTitle = Box(resultBox, width="fill")
+        Text(resultTitle, text="Résultats de recherche")
+
+        # boutons du bas
+
+        self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, scrollbar=True)
+
+
+    def createRightScreen(self, container):
+        mainSection = Box(container, height="fill", width=int(container.width*2/3))
+
+        self.createUpperRightScreen(mainSection)
+
+        self.createLowerRightScreen(mainSection)
+
+
+    def createUpperRightScreen(self, container):
+        searchBox = Box(container, width="fill", align="top")
+
+        self.upperRight_form(searchBox)
+
+
+    def upperRight_form(self, container):
+        Text(container, text="Recherche de station")
+
+        Box(container, height="40")  # margin
+
+        inputs = Box(container, layout="grid")
+        Text(inputs, grid=[0,0], text="Ville cible")
+        Text(inputs, grid=[1,0])  # margin
+        town = TextBox(inputs, grid=[2,0], width="25")
+        Text(inputs, grid=[0,1], text="Nom de station")
+        Text(inputs, grid=[1,1])  # margin
+        station = TextBox(inputs, grid=[2,1], width="25")
+
+        Box(container, height="40")  # margin
+
+        PushButton(container, text="submit", command=self.updateResult_form, args=(town, station))
+
+
+    def updateResult_form(self, town, station):
+        self.resultContainer.clear()
+
+        self.resultList = searchByTownAndStation(self.collection_live, town.value, station.value)
+
+        for item in self.resultList:
+            self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
+
+
+    def createLowerRightScreen(self, container):
+        updateBox = Box(container, width="fill", align="bottom")
+        Text(updateBox, text="Modif de station")
