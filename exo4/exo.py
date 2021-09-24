@@ -1,3 +1,5 @@
+from ast import Str
+from tkinter.constants import BOTH
 from guizero import App, Box, TextBox, ListBox, Text, PushButton
 
 from exo4.exo4_1.exo import searchByTownAndStation
@@ -13,6 +15,7 @@ class exo4:
         self.collection_history = collection_history
         self.resultList = []
         self.resultContainer = None
+        self.resultButtons = []
         self.updatePanel = None
 
         try:
@@ -28,19 +31,43 @@ class exo4:
             print(e)
 
 
+    def resultContainerSelection(self):
+        self.updatePanel.hide()
+
+        if not self.resultContainer.value:
+            for btn in self.resultButtons:
+                btn.disable()
+            return
+
+        for btn in self.resultButtons:
+            btn.enable()
+
+        if len(self.resultContainer.value) > 1:
+            self.resultButtons[0].disable()
+
+
     def createLeftScreen(self, container):
         resultBox = Box(container, height="fill", width=int(container.width/3), align="left")
 
         resultTitle = Box(resultBox, width="fill")
         Text(resultTitle, text="Résultats de recherche")
 
-        self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, scrollbar=True)
+        self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, multiselect=True, #scrollbar=True,
+                                        command=self.resultContainerSelection)
 
         menu_box = Box(resultBox, align="bottom", layout="grid")
+
+        # # sadly not working... peut être en l'englobant dans une frame tkinter
+        # from tkinter import Listbox as tkListbox, Scrollbar
+        # scrollbar = Scrollbar(resultBox.tk, orient="horizontal")
+        # scrollbar.pack(side="bottom", fill="both")
+        # tkListbox(self.resultContainer.tk).configure(xscrollcommand=scrollbar.set)
+        # scrollbar.configure(command=tkListbox(self.resultContainer.tk).xview)
+
         buttons = [
             {
                 "name": "Modifier infos",
-                "command": self.leftScreen_update,
+                "command": lambda: self.updatePanel.show(),
                 "args": (),
                 "grid": [0,0]
             },
@@ -64,35 +91,38 @@ class exo4:
             }
         ]
         for button in buttons:
-            PushButton(menu_box, width="15", grid=button["grid"], text=button["name"],
-                        command=button["command"], args=button["args"])
-
-
-    def leftScreen_update(self):
-        self.updatePanel.hide()
-        print("update index ...")
-        # search index in resultContainer
-
-        self.updatePanel.show()
+            btn = PushButton(menu_box, width="15", grid=button["grid"], text=button["name"],
+                                command=button["command"], args=button["args"], enabled=False)
+            self.resultButtons.append(btn)
 
 
     def leftScreen_delete(self):
         self.updatePanel.hide()
-        print("delete indexes ...")
-        # search indexes in resultContainer
 
-        for index in []:
-            # remove index in resultContainer
-            deleteStation(self.collection_live, self.collection_history, self.resultList[0]) # index
-            # remove index in resultList
+        indexes = [i for i, entity in enumerate(self.resultList)
+                    if f"{entity['ville']} ; {entity['nom']}" in self.resultContainer.value]
+
+        to_remove = []
+        for index in indexes[::-1]: # reverse
+            to_remove.append(self.resultList[index])
+            del self.resultList[index]
+
+        self.resultContainer.clear()
+        for item in self.resultList:
+            self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
+
+        for index in indexes:
+            deleteStation(self.collection_live, self.collection_history, to_remove)
 
 
     def leftScreen_flip(self, state):
         self.updatePanel.hide()
         print(f"flip {state} indexes ...")
-        # search indexes in resultContainer
 
-        flipStations(self.collection_live, [], state)
+        indexes = [i for i, entity in enumerate(self.resultList)
+                    if f"{entity['ville']} ; {entity['nom']}" in self.resultContainer.value]
+
+        flipStations(self.collection_live, indexes, state)
 
 
     def createRightScreen(self, container):
@@ -171,10 +201,9 @@ class exo4:
         self.updatePanel.hide()
         self.resultContainer.clear()
 
-        self.resultList = searchByTownAndStation(self.collection_live, town.value, station.value)
-
-        for item in self.resultList:
+        for item in searchByTownAndStation(self.collection_live, town.value, station.value):
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
+            self.resultList.append(item)
 
 
     def createLowerRightScreen(self, container):
@@ -211,12 +240,20 @@ class exo4:
 
     
     def updateFields(self):
-        newObject = self.resultList[0] # index
+        index = [i for i, entity in enumerate(self.resultList)
+                if self.resultContainer.value[0] == f"{entity['ville']} ; {entity['nom']}"][0]
+
+        newObject = self.resultList[index]
 
         # update newObject with fields
+        newObject["nom"] = "test"
+
+        self.resultList[index] = newObject
+
+        self.resultContainer.clear()
+        for item in self.resultList:
+            self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
 
         updateStation(self.collection_live, newObject)
-
-        # update self.resultContainer if displayed data changed
 
         self.updatePanel.hide()
