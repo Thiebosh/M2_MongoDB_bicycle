@@ -23,19 +23,6 @@ class exo4:
             Box(app, height="fill", align="left", border=True)
             self.createRightScreen(app)
 
-            # menu_box = Box(app, align="top", layout="grid", border=True)
-
-            # frames = []
-            # for i in range(5):
-            #     name = f"step{i+1}"
-
-            #     frames.append(Box(app, width=app.width, height="fill"))
-            #     frames[-1].hide()
-
-            #     PushButton(menu_box, width="18", grid=[i,0], text=name, command=showFrame, args=(frames, i))
-
-            #     globals()[name](collection_live, collection_history, frames[-1])
-
             app.display()
         except Exception as e:
             print(e)
@@ -49,7 +36,6 @@ class exo4:
 
         self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, scrollbar=True)
 
-        # boutons du bas
         menu_box = Box(resultBox, align="bottom", layout="grid")
         buttons = [
             {
@@ -118,9 +104,27 @@ class exo4:
 
 
     def createUpperRightScreen(self, container):
-        searchBox = Box(container, width="fill", align="top")
+        menu_box = Box(container, align="top", layout="grid")
 
-        self.upperRight_form(searchBox)
+        frames = []
+        frames.append(Box(container, width="fill", align="top"))
+        self.upperRight_form(frames[-1])
+        
+        frames.append(Box(container, width="fill", align="top"))
+        self.upperRight_map(frames[-1])
+        
+        frames.append(Box(container, width="fill", align="top"))
+        self.upperRight_stats(frames[-1])
+
+        for i, name in enumerate(["Formulaire", "Map", "Statistiques"]):
+            PushButton(menu_box, width="22", grid=[i,0], text=name, command=self.showFrame, args=(frames, i))
+            frames[i].hide()
+
+
+    def showFrame(self, frames, index):
+        for frame in frames:
+            frame.hide()
+        frames[index].show()
 
 
     def upperRight_form(self, container):
@@ -149,6 +153,18 @@ class exo4:
         args = (inputs["town"]["ptr"], inputs["station"]["ptr"])
         PushButton(container, text="Rechercher", width="16",
                     command=self.updateResult_form, args=args)
+
+
+    def upperRight_map(self, container):
+        Box(container, height="10")  # margin
+
+        Text(container, text="Polygonalisation")
+
+
+    def upperRight_stats(self, container):
+        Box(container, height="10")  # margin
+
+        Text(container, text="Recherche statistique")
 
 
     def updateResult_form(self, town, station):
@@ -191,7 +207,7 @@ class exo4:
         Box(updateBox, height="10")  # margin
 
         self.updatePanel = updateBox
-        # self.updatePanel.hide()
+        self.updatePanel.hide()
 
     
     def updateFields(self):
