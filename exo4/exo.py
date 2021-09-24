@@ -124,21 +124,31 @@ class exo4:
 
 
     def upperRight_form(self, container):
+        Box(container, height="10")  # margin
+
         Text(container, text="Recherche de station")
 
+        Box(container, height="25")  # margin
+
+        inputs = {
+            "town": {
+                "text": "Ville cible"
+            },
+            "station": {
+                "text": "Nom de station"
+            }
+        }
+        inputsContainer = Box(container, layout="grid")
+        for i, (key, data) in enumerate(inputs.items()):
+            Text(inputsContainer, grid=[0,i], text=data["text"])
+            Text(inputsContainer, grid=[1,i])  # margin
+            inputs[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25")
+
         Box(container, height="40")  # margin
 
-        inputs = Box(container, layout="grid")
-        Text(inputs, grid=[0,0], text="Ville cible")
-        Text(inputs, grid=[1,0])  # margin
-        town = TextBox(inputs, grid=[2,0], width="25")
-        Text(inputs, grid=[0,1], text="Nom de station")
-        Text(inputs, grid=[1,1])  # margin
-        station = TextBox(inputs, grid=[2,1], width="25")
-
-        Box(container, height="40")  # margin
-
-        PushButton(container, text="submit", command=self.updateResult_form, args=(town, station))
+        args = (inputs["town"]["ptr"], inputs["station"]["ptr"])
+        PushButton(container, text="Rechercher", width="16",
+                    command=self.updateResult_form, args=args)
 
 
     def updateResult_form(self, town, station):
@@ -153,11 +163,44 @@ class exo4:
 
     def createLowerRightScreen(self, container):
         updateBox = Box(container, width="fill", align="bottom")
-        Text(updateBox, text="Modif de station")
+        Box(updateBox, width="fill", align="top", border=True)
 
-        # add forms
+        Box(updateBox, height="10")  # margin
 
-        # call exo4_2 function
+        Text(updateBox, text="Modification des données d'une station")
+
+        Box(updateBox, height="25")  # margin
+
+        inputs = {
+            "town": {
+                "text": "Champ",
+                "placeholder": "Donnée"
+            }
+        }
+        inputsContainer = Box(updateBox, layout="grid")
+        for i, (key, data) in enumerate(inputs.items()):
+            Text(inputsContainer, grid=[0,i], text=data["text"])
+            Text(inputsContainer, grid=[1,i])  # margin
+            inputs[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25", text=data["placeholder"])
+
+        Box(updateBox, height="40")  # margin
+
+        PushButton(updateBox, text="Modifier", width="16",
+                    command=self.updateFields, args=())
+
+        Box(updateBox, height="10")  # margin
 
         self.updatePanel = updateBox
+        # self.updatePanel.hide()
+
+    
+    def updateFields(self):
+        newObject = self.resultList[0] # index
+
+        # update newObject with fields
+
+        updateStation(self.collection_live, newObject)
+
+        # update self.resultContainer if displayed data changed
+
         self.updatePanel.hide()
