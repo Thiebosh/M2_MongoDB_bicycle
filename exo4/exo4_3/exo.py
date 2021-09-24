@@ -1,6 +1,4 @@
-from guizero import Text
+# from bson.objectid import ObjectId
 
-
-def step3(collection_live, collection_history, frame):
-    print("setup step3 frame")
-    Text(frame, text="Step3")
+def deleteStation(collection_live, collection_history, objectId):
+    pass
