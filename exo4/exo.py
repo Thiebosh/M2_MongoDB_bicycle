@@ -17,6 +17,8 @@ class exo4:
         self.resultContainer = None
         self.resultButtons = []
         self.updatePanel = None
+        self.updateInputs = None
+        self.updateButton = None
 
         try:
             app = App(title="Business program", height="600", width="800")
@@ -67,7 +69,7 @@ class exo4:
         buttons = [
             {
                 "name": "Modifier infos",
-                "command": lambda: self.updatePanel.show(),
+                "command": self.leftScreen_update,
                 "args": (),
                 "grid": [0,0]
             },
@@ -94,6 +96,33 @@ class exo4:
             btn = PushButton(menu_box, width="15", grid=button["grid"], text=button["name"],
                                 command=button["command"], args=button["args"], enabled=False)
             self.resultButtons.append(btn)
+
+
+    def leftScreen_update(self):
+        index = [i for i, entity in enumerate(self.resultList)
+                if self.resultContainer.value[0] == f"{entity['ville']} ; {entity['nom']}"][0]
+
+        entity = self.resultList[index]
+
+        inputs = {}
+        for i, (key, value) in enumerate(entity.items()):
+            if key in ["_id", "geometry"]:
+                continue
+
+            Text(self.updateInputs, grid=[0,i], text=key)
+            Text(self.updateInputs, grid=[1,i])  # margin
+            inputs[key] = TextBox(self.updateInputs, grid=[2,i], width="25", text=value)
+
+        for i, value in enumerate(entity["geometry"]["coordinates"]):
+            key = ["latitude", "longitude"][i]
+            j = i + len(inputs) + 1
+            Text(self.updateInputs, grid=[0,j], text=key)
+            Text(self.updateInputs, grid=[1,j])  # margin
+            inputs[key] = TextBox(self.updateInputs, grid=[2,j], width="25", text=value)
+
+        self.updateButton.update_command(command=self.updateFields, args=(index, entity, inputs))
+        
+        self.updatePanel.show()
 
 
     def leftScreen_delete(self):
@@ -216,22 +245,11 @@ class exo4:
 
         Box(updateBox, height="25")  # margin
 
-        inputs = {
-            "town": {
-                "text": "Champ",
-                "placeholder": "Donnée"
-            }
-        }
-        inputsContainer = Box(updateBox, layout="grid")
-        for i, (key, data) in enumerate(inputs.items()):
-            Text(inputsContainer, grid=[0,i], text=data["text"])
-            Text(inputsContainer, grid=[1,i])  # margin
-            inputs[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25", text=data["placeholder"])
+        self.updateInputs = Box(updateBox, layout="grid")
 
         Box(updateBox, height="40")  # margin
 
-        PushButton(updateBox, text="Modifier", width="16",
-                    command=self.updateFields, args=())
+        self.updateButton = PushButton(updateBox, text="Modifier", width="16")
 
         Box(updateBox, height="10")  # margin
 
@@ -239,21 +257,28 @@ class exo4:
         self.updatePanel.hide()
 
     
-    def updateFields(self):
-        index = [i for i, entity in enumerate(self.resultList)
-                if self.resultContainer.value[0] == f"{entity['ville']} ; {entity['nom']}"][0]
+    def updateFields(self, index, entity, inputs):
+        intFields = ["nbvelosdispo", "nbplacesdispo", "nbplacestotal"]
+        for key, value in inputs.items():            
+            if key in ["longitude", "latitude"]:
+                continue
 
-        newObject = self.resultList[index]
+            try:
+                entity[key] = int(value.value) if key in intFields else value.value
+            except:
+                pass # no modif
 
-        # update newObject with fields
-        newObject["nom"] = "test"
+        try:
+            entity["geometry"]["coordinates"] = [int(inputs["latitude"].value), int(inputs["longitude"].value)]
+        except:
+            pass # no modif
 
-        self.resultList[index] = newObject
+        self.resultList[index] = entity
 
         self.resultContainer.clear()
         for item in self.resultList:
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
 
-        updateStation(self.collection_live, newObject)
+        updateStation(self.collection_live, entity)
 
         self.updatePanel.hide()
