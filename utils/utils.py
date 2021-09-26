@@ -1,10 +1,14 @@
 import json
-from os.path import exists
+import os
 import requests
 
 
+def listFiles(path):
+    return [f"{path}/{name}" for name in os.listdir(path) if os.path.isfile(f"{path}/{name}")]
+
+
 def readJson(jsonFile):
-    if not exists(jsonFile):
+    if not os.path.exists(jsonFile):
         print(f"Cannot found '{jsonFile}' file, close program.")
         exit(1)
     

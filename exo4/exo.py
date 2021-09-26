@@ -7,6 +7,7 @@ import pickle
 import json
 import os
 
+from utils.utils import listFiles, readJson
 from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import updateStation
 from exo4.exo4_3.exo import deleteStation
@@ -44,9 +45,8 @@ class exo4:
 
 
     def __del__(self):
-        for file in os.listdir(self.tmpDir):
-            if os.path.isfile:
-                os.remove(f"{self.tmpDir}/{file}")
+        for file in listFiles(self.tmpDir):
+            os.remove(file)
         os.removedirs(self.tmpDir)
 
 
@@ -269,7 +269,7 @@ class exo4:
             df = pd.DataFrame([line for line in line["coords"]], columns=["lat", "lon"])
 
             # read from json api files
-            mapBox = (df.lon.min()-0.005, df.lon.max()+0.005, df.lat.min()-0.005, df.lat.max()+0.005) # read json with town name and extract coords
+            mapBox = readJson(f"apis/{line['ville'].lower()}.json")["visual"]["boundingBox"]
             padding = 0.001 # overflow approx
             boundingBoxes.append((round(df.lon.min()-padding, 4),
                                     round(df.lon.max()+padding, 4),
@@ -280,9 +280,9 @@ class exo4:
             ax = fig.gca()
             ax.grid(True)
             ax.scatter(df.lon, df.lat, zorder=1, s=8)
+            ax.imshow(plt.imread(f"apis/imgs/{line['ville']}.png"), extent=mapBox, zorder=0, aspect='equal')
             ax.set_xlim(mapBox[0], mapBox[1])
             ax.set_ylim(mapBox[2], mapBox[3])
-            ax.imshow(plt.imread(f"img/{line['ville']}.png"), extent=mapBox, zorder=0, aspect='equal')
 
             fig.savefig(f"{self.tmpDir}/{i}.png")
             graphs.append(fig)

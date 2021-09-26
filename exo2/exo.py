@@ -1,14 +1,11 @@
 from pymongo import UpdateOne, InsertOne
 from pymongo.errors import BulkWriteError
 from datetime import datetime
-from os import listdir
 
 import threading
 from time import sleep
 
-from utils.utils import download
-from utils.utils import readJson
-from utils.utils import access_data
+from utils.utils import listFiles, download, readJson, access_data
 
 
 def update_from_api(api):
@@ -88,8 +85,8 @@ def worker(path, collection_live, collection_history, evt_end):
 
 
 def exo2(collection_live, collection_history, evt_end):
-    for file in listdir("apis"):
-        args = (f"apis/{file}", collection_live, collection_history, evt_end)
+    for file in listFiles("apis"):
+        args = (file, collection_live, collection_history, evt_end)
         thread = (threading.Thread(target=worker, args=args))
         thread.setDaemon(True)
         thread.start()

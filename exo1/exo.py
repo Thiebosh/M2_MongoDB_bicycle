@@ -1,9 +1,6 @@
 from pymongo.errors import WriteError
-from os import listdir
 
-from utils.utils import download
-from utils.utils import readJson
-from utils.utils import access_data
+from utils.utils import listFiles, download, readJson, access_data
 
 
 def interpreter(field, fields, mapper):
@@ -71,8 +68,8 @@ def exo1(collection, *_):
 
     print("\nCollect static api's datas...")
     datas = []
-    for file in listdir("apis"):
-        datas += insert_from_api(f"apis/{file}")
+    for file in listFiles("apis"):
+        datas += insert_from_api(file)
 
     print("Collect done - uploading...")
     try:
