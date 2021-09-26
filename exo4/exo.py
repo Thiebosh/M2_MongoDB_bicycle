@@ -1,5 +1,5 @@
-from guizero import App, Box, TextBox, ListBox, Text, PushButton, Picture, ButtonGroup, Combo
-from tkinter import Scrollbar
+from guizero import App, Box, TextBox, ListBox, Text, PushButton, Picture, Combo
+from tkinter import Scrollbar, Spinbox, DoubleVar
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -352,7 +352,13 @@ class exo4:
         comparison = [">", ">=", "==", "<=", "<"]
         compare = Combo(inputsContainer, grid=[2,0], width=2, options=comparison, selected="<")
         Text(inputsContainer, grid=[3,0])
-        ratio = TextBox(inputsContainer, grid=[4,0], width=5, text="20")
+        box = Box(inputsContainer, grid=[4,0])
+
+        #Create an instance of Tkinter frame or window
+        #Set the default value for SpinBox
+        ratio = DoubleVar(box.tk, value=20.0)
+        box.add_tk_widget(Spinbox(box.tk, from_=0, to=100, width=5, textvariable=ratio))
+        # ratio = TextBox(inputsContainer, grid=[4,0], width=5, text="20")
         Text(inputsContainer, grid=[5,0], text=" %")
 
         Box(container, height="15")  # margin
@@ -400,11 +406,14 @@ class exo4:
             "<=": "$lte",
             "<": "$lt"
         }
-        args = (compare_map[compare.value], ratio.value,
-                begin_hour.value, begin_minuts.value,
-                end_hour.value, end_minuts.value,
-                week.index(begin_week.value), week.index(end_week.value))
-        self.insertResult(searchByStats(self.collection_live, self.collection_history, *args))
+        try:
+            args = (compare_map[compare.value], ratio.get(),
+                    begin_hour.value, begin_minuts.value,
+                    end_hour.value, end_minuts.value,
+                    week.index(begin_week.value), week.index(end_week.value))
+            self.insertResult(searchByStats(self.collection_live, self.collection_history, *args))
+        except:
+            pass # possible ratio non float value
 
 
     def insertResult(self, list):
