@@ -162,3 +162,7 @@ solution ultime : https://developer.jcdecaux.com/#/opendata/vls?page=dynamic
 3 - supprimer une ou toutes les entrées de table live ? ou history ? ou données "anciennes de history" ? => suppression d'une ou plusieurs stations + historique / éventuellement purge d'historique
 4 - desactivate ?? => trouvable / pas trouvable pour le 1 => tous ou partie => sélection de zone par polygone
 5 - utiliser fonctions mongo => se renseigner
+
+
+**generation requirements.txt**
+pipreqs --encoding utf-8 puis attendre
