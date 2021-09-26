@@ -2,6 +2,7 @@ from guizero import App, Box, TextBox, ListBox, Text, PushButton, Picture
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
+from matplotlib.colors import ListedColormap
 import io
 import pickle
 import json
@@ -266,7 +267,7 @@ class exo4:
             PushButton(menu_box, width="10", grid=[i,0], text=line['ville'], command=self.showMap,
                         args=(frames, i, boundingBoxes, polyInput))
 
-            df = pd.DataFrame([line for line in line["coords"]], columns=["lat", "lon"])
+            df = pd.DataFrame([line for line in line["coords"]], columns=["lat", "lon", "actif"])
 
             # read from json api files
             mapBox = readJson(f"apis/{line['ville'].lower()}.json")["visual"]["boundingBox"]
@@ -279,7 +280,7 @@ class exo4:
             fig = plt.figure()
             ax = fig.gca()
             ax.grid(True)
-            ax.scatter(df.lon, df.lat, zorder=1, s=8)
+            ax.scatter(df.lon, df.lat, zorder=1, s=8, c=df.actif, cmap=ListedColormap(["blue"] if len(df.actif.unique()) == 1 else ["black", "blue"]))
             ax.imshow(plt.imread(f"apis/imgs/{line['ville']}.png"), extent=mapBox, zorder=0, aspect='equal')
             ax.set_xlim(mapBox[0], mapBox[1])
             ax.set_ylim(mapBox[2], mapBox[3])

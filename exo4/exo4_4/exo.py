@@ -1,17 +1,17 @@
 
 def flipStations(collection, objectIds, state):
-    query = {
+    match = {
         "_id": {
             "$in": objectIds
         }
-    },
-    {
+    }
+    query = {
         "$set" : {
             "actif": state,
         }
     }
 
-    result = collection.update_many(query)
+    result = collection.update_many(match, query)
     print(f"=> updated {result.modified_count}/{result.matched_count}/{len(objectIds)} lines")
 
 
@@ -21,7 +21,16 @@ def getCoordsByTown(collection):
             "$project": {
                 "_id": 0,
                 "ville": 1,
-                "coords": "$geometry.coordinates"
+                "coords": [
+                    # how to unwind this
+                    {
+                        "$arrayElemAt": ["$geometry.coordinates", 0]
+                    },
+                    {
+                        "$arrayElemAt": ["$geometry.coordinates", 1]
+                    },
+                    "$actif"
+                ]
             }
         },
         {
@@ -39,6 +48,11 @@ def getCoordsByTown(collection):
                 "coords": 1
             }
         },
+        {
+            "$sort": {
+                "ville": 1
+            }
+        }
     ]
 
     return list(collection.aggregate(aggregation))
