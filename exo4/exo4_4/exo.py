@@ -1,7 +1,18 @@
 
 def flipStations(collection, objectIds, state):
-    pass
-    # update all ids with one state
+    query = {
+        "_id": {
+            "$in": objectIds
+        }
+    },
+    {
+        "$set" : {
+            "actif": state,
+        }
+    }
+
+    result = collection.update_many(query)
+    print(f"=> updated {result.modified_count}/{result.matched_count}/{len(objectIds)} lines")
 
 
 def getCoordsByTown(collection):

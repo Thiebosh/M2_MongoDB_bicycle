@@ -142,22 +142,21 @@ class exo4:
 
         to_remove = []
         for index in indexes[::-1]: # reverse
-            to_remove.append(self.resultList[index])
+            to_remove.append(self.resultList[index]["_id"])
             del self.resultList[index]
 
         self.resultContainer.clear()
         for item in self.resultList:
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
 
-        for index in indexes:
-            deleteStation(self.collection_live, self.collection_history, to_remove)
+        deleteStation(self.collection_live, self.collection_history, to_remove)
 
 
     def leftScreen_flip(self, state):
         self.updatePanel.hide()
         print(f"flip {state} indexes ...")
 
-        indexes = [i for i, entity in enumerate(self.resultList)
+        indexes = [entity["_id"] for entity in self.resultList
                     if f"{entity['ville']} ; {entity['nom']}" in self.resultContainer.value]
 
         flipStations(self.collection_live, indexes, state)
