@@ -44,6 +44,9 @@ def formGenerator(container, config):
         Text(inputsContainer, grid=[1,i])  # margin
         config[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25")
 
+        if "value" in data:
+            config[key]["ptr"].value = data["value"]
+
 
 def dumpGraph(graph):
     graph_buffer = io.BytesIO()

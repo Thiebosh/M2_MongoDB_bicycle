@@ -234,9 +234,8 @@ class exo4:
 
         Box(container, height="40")  # margin
 
-        args = (inputs["town"]["ptr"], inputs["station"]["ptr"])
-        PushButton(container, text="Rechercher", width="16",
-                    command=self.updateResult_form, args=args)
+        PushButton(container, text="Rechercher", width="16", command=self.updateResult_form,
+                    args=(inputs["town"]["ptr"], inputs["station"]["ptr"]))
 
 
     def upperRight_map(self, container):
