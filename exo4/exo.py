@@ -170,11 +170,14 @@ class exo4:
     def leftScreen_flip(self, state):
         self.updatePanel.hide()
 
-        indexes = [entity["_id"] for entity in self.resultList
+        indexes = [i for i, entity in enumerate(self.resultList)
                     if f"{entity['ville']} ; {entity['nom']}" in self.resultContainer.value]
+        dbIndexes = [self.resultList[index]["_id"] for index in indexes]
 
-        flipStations(self.collection_live, indexes, state)
+        flipStations(self.collection_live, dbIndexes, state)
         self.updateMaps()
+        for index in indexes:
+            self.flipDisplayState(index, state)
 
 
     def createRightScreen(self, container):
@@ -241,14 +244,6 @@ class exo4:
                     command=self.updateResult_form, args=args)
 
 
-    def showMap(self, i, textField):
-        self.clear_polygon()
-        self.showFrame(self.pictures, i)
-        textField.clear()
-        box = self.boundingBoxes[i]
-        textField.append([[box[0], box[2]], [box[0], box[3]], [box[1], box[3]], [box[1], box[2]]]) # whole box
-
-
     def upperRight_map(self, container):
         Box(container, height="10")  # margin
         Text(container, align="top", text="Sélection polygonale")
@@ -267,9 +262,10 @@ class exo4:
         PushButton(footer, text="Sélectionner", command=self.updateResult_polygon)
         Box(footer, height="10")  # margin
 
+        towns = []
         for i, file in enumerate(listFiles("apis/imgs")):
             name = file[10:-4]
-            PushButton(menu_box, width="10", grid=[i,0], text=name, command=self.showMap, args=(i, polyField))
+            towns.append(PushButton(menu_box, width="10", grid=[i,0], text=name, command=self.showMap, args=(i, polyField, towns)))
 
             mapBox = readJson(f"apis/{name.lower()}.json")["visual"]["boundingBox"]
 
@@ -289,6 +285,18 @@ class exo4:
             self.pictures[-1].hide()
 
         self.updateMaps()
+
+
+    def showMap(self, i, textField, buttons):
+        buttons[self.currentFrame].text_size = 9
+
+        self.clear_polygon()
+        self.showFrame(self.pictures, i)
+        textField.clear()
+        box = self.boundingBoxes[i]
+        textField.append([[box[0], box[2]], [box[0], box[3]], [box[1], box[3]], [box[1], box[2]]]) # whole box
+
+        buttons[i].text_size = 10
 
 
     def updateMaps(self):
@@ -370,28 +378,26 @@ class exo4:
 
 
     def updateResult_form(self, town, station):
-        self.updatePanel.hide()
-        self.resultContainer.clear()
-        self.resultList = []
-
-        for item in searchByTownAndStation(self.collection_live, town.value, station.value):
-            self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
-            self.resultList.append(item)
+        self.insertResult(searchByTownAndStation(self.collection_live, town.value, station.value))
 
 
     def updateResult_polygon(self):
+        self.insertResult(searchByPolygon(self.collection_live, self.polygon))
+
+
+    def insertResult(self, list):
         self.updatePanel.hide()
         self.resultContainer.clear()
         self.resultList = []
 
-        if not self.polygon:
-            print("stopped")
-            return
-        print("continued...")
-
-        for item in searchByPolygon(self.collection_live, self.polygon):
+        for i, item in enumerate(list):
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
             self.resultList.append(item)
+            self.flipDisplayState(i, item["actif"])
+
+
+    def flipDisplayState(self, index, state):
+        self.resultContainer.children[0].tk.itemconfig(index, { "bg":("white" if state else "lightgrey") })
 
 
     def createLowerRightScreen(self, container):
