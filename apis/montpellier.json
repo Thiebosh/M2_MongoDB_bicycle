@@ -33,7 +33,6 @@
         "refresh_time": 60
     },
     "visual": {
-        "img": "Montpellier.png",
         "boundingBox": [43.5534, 43.6441, 3.8232, 3.9684]
     }
 }

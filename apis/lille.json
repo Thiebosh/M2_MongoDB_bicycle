@@ -41,7 +41,6 @@
         "refresh_time": 60
     },
     "visual": {
-        "img": "Lille.png",
-        "boundingBox": [50.598, 50.7418, 3.0065, 3.22]
+        "boundingBox": [50.598, 50.7418, 3.0065, 3.2200]
     }
 }

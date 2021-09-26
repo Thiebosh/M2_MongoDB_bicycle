@@ -29,7 +29,6 @@
         "refresh_time": 60
     },
     "visual": {
-        "img": "Lyon.png",
         "boundingBox": [45.6929, 45.8816, 4.7735, 4.9607]
     }
 }

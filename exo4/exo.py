@@ -1,6 +1,7 @@
 from guizero import App, Box, TextBox, ListBox, Text, PushButton, Picture
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
 import io
 import pickle
 import json
@@ -35,6 +36,10 @@ class exo4:
             app.display()
         except Exception as e:
             print(e)
+
+
+    def __del__(self):
+        print("remove imgs")
 
 
     def resultContainerSelection(self):
@@ -237,7 +242,6 @@ class exo4:
 
         frames = []
         graphs = []
-        towns = []
         boundingBoxes = []
 
         footer = Box(container, align="bottom")
@@ -247,57 +251,55 @@ class exo4:
         polyInput = TextBox(inputs, grid=[1,0], width=20)
         Text(inputs, grid=[2,0])
         PushButton(inputs, grid=[3,0], text="Appliquer", command=self.draw_polygone,
-                    args=(towns, polyInput, frames, graphs))
+                    args=(polyInput, frames, graphs))
         Box(footer, height="10")  # margin
-        PushButton(footer, text="Sélectionner")
+        PushButton(footer, text="Sélectionner") #, command=send, args=(boundingboxes))
         Box(footer, height="10")  # margin
 
         for i, line in enumerate(getCoordsByTown(self.collection_live)):
-            towns.append(line["ville"])
-
             PushButton(menu_box, width="10", grid=[i,0], text=line['ville'], command=self.showMap,
                         args=(frames, i, boundingBoxes, polyInput))
 
             df = pd.DataFrame([line for line in line["coords"]], columns=["lat", "lon"])
 
             # read from json api files
-            padding = 0.005
-            boundingBoxes.append((round(df.lon.min()-padding,4),
-                                    round(df.lon.max()+padding,4),
-                                    round(df.lat.min()-padding,4),
-                                    round(df.lat.max()+padding,4)))
+            mapBox = (df.lon.min()-0.005, df.lon.max()+0.005, df.lat.min()-0.005, df.lat.max()+0.005) # read json with town name and extract coords
+            padding = 0.001 # overflow approx
+            boundingBoxes.append((round(df.lon.min()-padding, 4),
+                                    round(df.lon.max()+padding, 4),
+                                    round(df.lat.min()-padding, 4),
+                                    round(df.lat.max()+padding, 4)))
 
             fig = plt.figure()
             ax = fig.gca()
-            ax.scatter(df.lon, df.lat, zorder=1, c='b', s=10)
-            ax.set_xlim(boundingBoxes[-1][0], boundingBoxes[-1][1])
-            ax.set_ylim(boundingBoxes[-1][2], boundingBoxes[-1][3])
             ax.grid(True)
+            ax.scatter(df.lon, df.lat, zorder=1, s=8)
+            ax.set_xlim(mapBox[0], mapBox[1])
+            ax.set_ylim(mapBox[2], mapBox[3])
+            ax.imshow(plt.imread(f"img/{line['ville']}.png"), extent=mapBox, zorder=0, aspect='equal')
 
-            back = plt.imread(f"img/{line['ville']}.png")
-            ax.imshow(back, zorder=0, extent=boundingBoxes[-1], aspect='equal')
-            fig.savefig(f"tmp_{line['ville']}.png")
+            fig.savefig(f"tmp_{i}.png")
             graphs.append(fig)
 
-            frames.append(Picture(container, image=f"tmp_{line['ville']}.png", height=350, align="top"))
+            frames.append(Picture(container, image=f"tmp_{i}.png", height=350, align="top"))
             frames[-1].hide()
 
 
-    def draw_polygone(self, towns, polyInput, imgs, graphs):
+    def draw_polygone(self, polyInput, imgs, graphs):
+        index = self.currentFrame
+
         polygon = json.loads(polyInput.value)
 
-        fig = graphs[self.currentFrame]
-
         graph_buffer = io.BytesIO()
-        pickle.dump(fig, graph_buffer)
+        pickle.dump(graphs[index], graph_buffer)
         graph_buffer.seek(0)  # crucial
         newfig = pickle.load(graph_buffer)
+        ax = newfig.gca()
+        ax.add_patch(Polygon(polygon, alpha=0.2, color="red"))
+        ax.scatter([x for x, _ in polygon], [y for _, y in polygon], c="red", marker="x")
+        newfig.savefig(f"tmp_{index}.png")
 
-        newfig.gca().scatter([x for x, _ in polygon], [y for _, y in polygon], s=10, c="red")
-
-        newfig.savefig(f"tmp_{towns[self.currentFrame]}_poly.png")
-
-        imgs[self.currentFrame].value = f"tmp_{towns[self.currentFrame]}_poly.png"
+        imgs[index].value = f"tmp_{index}.png"
 
 
     def upperRight_stats(self, container):
