@@ -1,6 +1,6 @@
 import json
 from os.path import exists
-from requests import request
+import requests
 
 
 def readJson(jsonFile):
@@ -15,7 +15,7 @@ def readJson(jsonFile):
 
 
 def download(url):
-    return json.loads(request("GET", url).text.encode("utf8"))
+    return requests.get(url).json()
 
 
 def access_data(accessed, actions):

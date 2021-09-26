@@ -36,6 +36,7 @@ def insert_from_api(path):
                 "nbvelosdispo": 0,
                 "nbplacesdispo": 0,
                 "nbplacestotal": interpreter("nbplacestotal", fields, mapper),
+                "actif": True,
                 "geometry": {
                     "type": "Point",
                     "coordinates": [

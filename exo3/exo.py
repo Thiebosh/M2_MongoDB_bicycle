@@ -140,10 +140,8 @@ def exo3(collection, _, coordinates, minDistance, maxDistance, closest, *__):
         }
     ]
 
-    query = collection.aggregate(aggregation)
-
     try:
-        for element in query:
+        for element in collection.aggregate(aggregation):
             pprint(element)
     except Exception as e:
         print("something went wrong...")

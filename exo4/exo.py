@@ -1,11 +1,14 @@
-from ast import Str
-from tkinter.constants import BOTH
-from guizero import App, Box, TextBox, ListBox, Text, PushButton
+from guizero import App, Box, TextBox, ListBox, Text, PushButton, Picture
+import pandas as pd
+import matplotlib.pyplot as plt
+import io
+import pickle
+import json
 
 from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import updateStation
 from exo4.exo4_3.exo import deleteStation
-from exo4.exo4_4.exo import flipStations
+from exo4.exo4_4.exo import flipStations, getCoordsByTown
 from exo4.exo4_5.exo import step5
 
 
@@ -19,6 +22,7 @@ class exo4:
         self.updatePanel = None
         self.updateInputs = None
         self.updateButton = None
+        self.currentFrame = None
 
         try:
             app = App(title="Business program", height="600", width="800")
@@ -168,11 +172,11 @@ class exo4:
         frames = []
         frames.append(Box(container, width="fill", align="top"))
         self.upperRight_form(frames[-1])
-        
-        frames.append(Box(container, width="fill", align="top"))
+
+        frames.append(Box(container, width="fill", height="fill", align="top"))
         self.upperRight_map(frames[-1])
-        
-        frames.append(Box(container, width="fill", align="top"))
+
+        frames.append(Box(container, width="fill", height="fill", align="top"))
         self.upperRight_stats(frames[-1])
 
         for i, name in enumerate(["Formulaire", "Map", "Statistiques"]):
@@ -184,6 +188,8 @@ class exo4:
         for frame in frames:
             frame.hide()
         frames[index].show()
+
+        self.currentFrame = index
 
 
     def upperRight_form(self, container):
@@ -214,10 +220,84 @@ class exo4:
                     command=self.updateResult_form, args=args)
 
 
-    def upperRight_map(self, container):
-        Box(container, height="10")  # margin
+    def showMap(self, frames, i, boundingBoxes, textField):
+        self.showFrame(frames, i)
+        textField.clear()
+        box = boundingBoxes[i]
+        textField.append([[box[0], box[2]], [box[0], box[3]], [box[1], box[3]], [box[1], box[2]]]) # whole box
 
-        Text(container, text="Polygonalisation")
+
+    def upperRight_map(self, container):
+        plt.switch_backend('agg') # able to end prgm when close windows
+
+        Box(container, height="10")  # margin
+        Text(container, align="top", text="Polygonalisation")
+        Box(container, height="10")  # margin
+        menu_box = Box(container, align="top", layout="grid")
+
+        frames = []
+        graphs = []
+        towns = []
+        boundingBoxes = []
+
+        footer = Box(container, align="bottom")
+        Box(footer, height="10")  # margin
+        inputs = Box(footer, layout="grid")
+        Text(inputs, grid=[0,0], text="Polygone : ")
+        polyInput = TextBox(inputs, grid=[1,0], width=20)
+        Text(inputs, grid=[2,0])
+        PushButton(inputs, grid=[3,0], text="Appliquer", command=self.draw_polygone,
+                    args=(towns, polyInput, frames, graphs))
+        Box(footer, height="10")  # margin
+        PushButton(footer, text="Sélectionner")
+        Box(footer, height="10")  # margin
+
+        for i, line in enumerate(getCoordsByTown(self.collection_live)):
+            towns.append(line["ville"])
+
+            PushButton(menu_box, width="10", grid=[i,0], text=line['ville'], command=self.showMap,
+                        args=(frames, i, boundingBoxes, polyInput))
+
+            df = pd.DataFrame([line for line in line["coords"]], columns=["lat", "lon"])
+
+            # read from json api files
+            padding = 0.005
+            boundingBoxes.append((round(df.lon.min()-padding,4),
+                                    round(df.lon.max()+padding,4),
+                                    round(df.lat.min()-padding,4),
+                                    round(df.lat.max()+padding,4)))
+
+            fig = plt.figure()
+            ax = fig.gca()
+            ax.scatter(df.lon, df.lat, zorder=1, c='b', s=10)
+            ax.set_xlim(boundingBoxes[-1][0], boundingBoxes[-1][1])
+            ax.set_ylim(boundingBoxes[-1][2], boundingBoxes[-1][3])
+            ax.grid(True)
+
+            back = plt.imread(f"img/{line['ville']}.png")
+            ax.imshow(back, zorder=0, extent=boundingBoxes[-1], aspect='equal')
+            fig.savefig(f"tmp_{line['ville']}.png")
+            graphs.append(fig)
+
+            frames.append(Picture(container, image=f"tmp_{line['ville']}.png", height=350, align="top"))
+            frames[-1].hide()
+
+
+    def draw_polygone(self, towns, polyInput, imgs, graphs):
+        polygon = json.loads(polyInput.value)
+
+        fig = graphs[self.currentFrame]
+
+        graph_buffer = io.BytesIO()
+        pickle.dump(fig, graph_buffer)
+        graph_buffer.seek(0)  # crucial
+        newfig = pickle.load(graph_buffer)
+
+        newfig.gca().scatter([x for x, _ in polygon], [y for _, y in polygon], s=10, c="red")
+
+        newfig.savefig(f"tmp_{towns[self.currentFrame]}_poly.png")
+
+        imgs[self.currentFrame].value = f"tmp_{towns[self.currentFrame]}_poly.png"
 
 
     def upperRight_stats(self, container):
