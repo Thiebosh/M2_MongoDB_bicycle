@@ -10,7 +10,7 @@ from utils.utils import listFiles, readJson, dumpGraph
 from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import updateStation
 from exo4.exo4_3.exo import deleteStation
-from exo4.exo4_4.exo import flipStations, getCoordsByTown
+from exo4.exo4_4.exo import flipStations, getCoordsByTown, searchByPolygon
 from exo4.exo4_5.exo import step5
 
 
@@ -32,6 +32,7 @@ class exo4:
         self.graphs = []
         self.pictures = []
         self.boundingBoxes = []
+        self.polygon = None
 
         if not os.path.exists(self.tmpDir):
             os.mkdir(self.tmpDir)
@@ -203,6 +204,8 @@ class exo4:
 
 
     def showFrame(self, frames, index):
+        self.polygon = None
+
         for frame in frames:
             frame.hide()
         frames[index].show()
@@ -239,6 +242,7 @@ class exo4:
 
 
     def showMap(self, i, textField):
+        self.clear_polygon()
         self.showFrame(self.pictures, i)
         textField.clear()
         box = self.boundingBoxes[i]
@@ -254,13 +258,13 @@ class exo4:
         footer = Box(container, align="bottom")
         Box(footer, height="10")  # margin
         inputs = Box(footer, layout="grid")
-        Text(inputs, grid=[0,0], text="Polygone : ")
-        polyField = TextBox(inputs, grid=[1,0], width=20)
+        Text(inputs, grid=[0,0,1,2], text="Polygone : ")
+        polyField = TextBox(inputs, grid=[1,0,1,2], width=25)
         Text(inputs, grid=[2,0])
-        PushButton(inputs, grid=[3,0], text="Appliquer", command=self.draw_polygon, args=(polyField,))
-        # push button clear ?
+        PushButton(inputs, grid=[3,0], width=7, text="Appliquer", command=self.draw_polygon, args=(polyField,))
+        PushButton(inputs, grid=[3,1], width=7, text="Retirer", command=self.clear_polygon)
         Box(footer, height="10")  # margin
-        PushButton(footer, text="Sélectionner") #, command=send, args=(polyField))
+        PushButton(footer, text="Sélectionner", command=self.updateResult_polygon)
         Box(footer, height="10")  # margin
 
         for i, file in enumerate(listFiles("apis/imgs")):
@@ -307,14 +311,27 @@ class exo4:
 
 
     def draw_polygon(self, field):
-        polygon = json.loads(field.value)
+        if not field.value:
+            return
+
+        self.polygon = json.loads(field.value)
 
         index = self.currentFrame
         newfig = dumpGraph(self.graphs[index])
         ax = newfig.gca()
-        ax.add_patch(Polygon(polygon, alpha=0.2, color="red"))
-        ax.scatter([x for x, _ in polygon], [y for _, y in polygon], c="red", marker="x")
+        ax.add_patch(Polygon(self.polygon, alpha=0.2, color="red"))
+        ax.scatter([x for x, _ in self.polygon], [y for _, y in self.polygon], c="red", marker="x")
         newfig.savefig(f"{self.tmpDir}/{index}.png")
+
+        self.pictures[index].value = f"{self.tmpDir}/{index}.png"
+
+
+    def clear_polygon(self):
+        self.polygon = None
+
+        index = self.currentFrame
+        fig = self.graphs[index]
+        fig.savefig(f"{self.tmpDir}/{index}.png")
 
         self.pictures[index].value = f"{self.tmpDir}/{index}.png"
 
@@ -328,8 +345,24 @@ class exo4:
     def updateResult_form(self, town, station):
         self.updatePanel.hide()
         self.resultContainer.clear()
+        self.resultList = []
 
         for item in searchByTownAndStation(self.collection_live, town.value, station.value):
+            self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
+            self.resultList.append(item)
+
+
+    def updateResult_polygon(self):
+        self.updatePanel.hide()
+        self.resultContainer.clear()
+        self.resultList = []
+
+        if not self.polygon:
+            print("stopped")
+            return
+        print("continued...")
+
+        for item in searchByPolygon(self.collection_live, self.polygon):
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
             self.resultList.append(item)
 
