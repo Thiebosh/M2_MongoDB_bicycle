@@ -251,7 +251,7 @@ class exo4:
 
     def upperRight_map(self, container):
         Box(container, height="10")  # margin
-        Text(container, align="top", text="Polygonalisation")
+        Text(container, align="top", text="Sélection polygonale")
         Box(container, height="10")  # margin
         menu_box = Box(container, align="top", layout="grid")
 
@@ -302,8 +302,8 @@ class exo4:
                                     round(df.lat.max()+padding, 4))
 
             newfig = dumpGraph(self.baseGraphs[i])
-            newfig.gca().scatter(df.lon, df.lat, zorder=1, s=8, c=df.actif,
-                                cmap=ListedColormap(["blue"] if len(df.actif.unique()) == 1 else ["black", "blue"]))
+            newfig.gca().scatter(df.lon, df.lat, zorder=3, s=10, c=df.actif,
+                                cmap=ListedColormap(["darkolivegreen"] if len(df.actif.unique()) == 1 else ["r", "darkolivegreen"]))
             newfig.savefig(f"{self.tmpDir}/{i}.png")
 
             self.graphs[i]= newfig
@@ -319,8 +319,9 @@ class exo4:
         index = self.currentFrame
         newfig = dumpGraph(self.graphs[index])
         ax = newfig.gca()
-        ax.add_patch(Polygon(self.polygon, alpha=0.2, color="red"))
-        ax.scatter([x for x, _ in self.polygon], [y for _, y in self.polygon], c="red", marker="x")
+        ax.add_patch(Polygon(self.polygon, zorder=1, alpha=0.2, color="cornflowerblue"))
+        ax.add_patch(Polygon(self.polygon, zorder=2, linestyle='solid', fill=False, color="blue"))
+        ax.scatter([x for x, _ in self.polygon], [y for _, y in self.polygon], c="blue", marker="x")
         newfig.savefig(f"{self.tmpDir}/{index}.png")
 
         self.pictures[index].value = f"{self.tmpDir}/{index}.png"
