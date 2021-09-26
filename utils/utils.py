@@ -3,6 +3,7 @@ import os
 import requests
 import io
 import pickle
+from guizero import Box, TextBox, Text
 
 
 def listFiles(path):
@@ -33,6 +34,15 @@ def access_data(accessed, actions):
             accessed = [record[key["unpack"]] for record in accessed]
 
     return accessed
+
+
+def formGenerator(container, config):
+    inputsContainer = Box(container, layout="grid")
+
+    for i, (key, data) in enumerate(config.items()):
+        Text(inputsContainer, grid=[0,i], text=data["text"].title())
+        Text(inputsContainer, grid=[1,i])  # margin
+        config[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25")
 
 
 def dumpGraph(graph):

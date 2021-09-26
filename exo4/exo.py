@@ -1,4 +1,5 @@
-from guizero import App, Box, TextBox, ListBox, Text, PushButton, Picture
+from guizero import App, Box, TextBox, ListBox, Text, PushButton, Picture, ButtonGroup, Combo
+from tkinter import Scrollbar
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
@@ -6,7 +7,7 @@ from matplotlib.colors import ListedColormap
 import json
 import os
 
-from utils.utils import listFiles, readJson, dumpGraph
+from utils.utils import listFiles, readJson, formGenerator, dumpGraph
 from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import updateStation
 from exo4.exo4_3.exo import deleteStation
@@ -77,17 +78,15 @@ class exo4:
         resultTitle = Box(resultBox, width="fill")
         Text(resultTitle, text="Résultats de recherche")
 
-        self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, multiselect=True, #scrollbar=True,
+        self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, multiselect=True, scrollbar=True,
                                         command=self.resultContainerSelection)
 
         menu_box = Box(resultBox, align="bottom", layout="grid")
 
-        # # sadly not working... peut être en l'englobant dans une frame tkinter
-        # from tkinter import Listbox as tkListbox, Scrollbar
-        # scrollbar = Scrollbar(resultBox.tk, orient="horizontal")
-        # scrollbar.pack(side="bottom", fill="both")
-        # tkListbox(self.resultContainer.tk).configure(xscrollcommand=scrollbar.set)
-        # scrollbar.configure(command=tkListbox(self.resultContainer.tk).xview)
+        scrollbar = Scrollbar(resultBox.tk, orient="horizontal")
+        scrollbar.pack(side="bottom", fill="both")
+        self.resultContainer.children[0].tk.configure(xscrollcommand=scrollbar.set)
+        scrollbar.configure(command=self.resultContainer.children[0].tk.xview)
 
         buttons = [
             {
@@ -129,17 +128,17 @@ class exo4:
 
         inputs = {}
         for i, (key, value) in enumerate(entity.items()):
-            if key in ["_id", "geometry"]:
+            if key in ["_id", "geometry", "actif"]:
                 continue
 
-            Text(self.updateInputs, grid=[0,i], text=key)
+            Text(self.updateInputs, grid=[0,i], text=key.title())
             Text(self.updateInputs, grid=[1,i])  # margin
             inputs[key] = TextBox(self.updateInputs, grid=[2,i], width="25", text=value)
 
         for i, value in enumerate(entity["geometry"]["coordinates"]):
             key = ["latitude", "longitude"][i]
             j = i + len(inputs) + 1
-            Text(self.updateInputs, grid=[0,j], text=key)
+            Text(self.updateInputs, grid=[0,j], text=key.title())
             Text(self.updateInputs, grid=[1,j])  # margin
             inputs[key] = TextBox(self.updateInputs, grid=[2,j], width="25", text=value)
 
@@ -231,11 +230,7 @@ class exo4:
                 "text": "Nom de station"
             }
         }
-        inputsContainer = Box(container, layout="grid")
-        for i, (key, data) in enumerate(inputs.items()):
-            Text(inputsContainer, grid=[0,i], text=data["text"])
-            Text(inputsContainer, grid=[1,i])  # margin
-            inputs[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25")
+        formGenerator(container, inputs)
 
         Box(container, height="40")  # margin
 
@@ -349,11 +344,18 @@ class exo4:
         Box(container, height="10")  # margin
         Text(container, text="Recherche statistique")
         Box(container, height="25")  # margin
-        
-        inputs = {
+
+        inputs1 = {
             "ratio": {
                 "text": "ratio vélo/total"
-            },
+            }
+        }
+        formGenerator(container, inputs1)
+
+        # choice = ButtonGroup(container, options=["en dessous de", "au dessus de"])
+        combo = Combo(container, width=20, options=["Greater than", "Greater or equal to", "Equals to", "Lower or equal to", "Lower than"])
+
+        inputs2 = {
             "begin_hour": {
                 "text": "heure de début"
             },
@@ -367,12 +369,8 @@ class exo4:
                 "text": "Jour de semaine de fin"
             }
         }
-        inputsContainer = Box(container, layout="grid")
-        for i, (key, data) in enumerate(inputs.items()):
-            Text(inputsContainer, grid=[0,i], text=data["text"])
-            Text(inputsContainer, grid=[1,i])  # margin
-            inputs[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25")
-        
+        formGenerator(container, inputs2)
+
         Box(container, height="25")  # margin
         PushButton(container, width="10", text="Rechercher") #, command=self.showMap, args=(i, polyField))
 
