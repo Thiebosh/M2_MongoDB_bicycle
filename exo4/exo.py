@@ -5,6 +5,7 @@ from matplotlib.patches import Polygon
 import io
 import pickle
 import json
+import os
 
 from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import updateStation
@@ -24,6 +25,10 @@ class exo4:
         self.updateInputs = None
         self.updateButton = None
         self.currentFrame = None
+        self.tmpDir = "tmp"
+
+        if not os.path.exists(self.tmpDir):
+            os.mkdir(self.tmpDir)
 
         try:
             app = App(title="Business program", height="600", width="800")
@@ -39,7 +44,10 @@ class exo4:
 
 
     def __del__(self):
-        print("remove imgs")
+        for file in os.listdir(self.tmpDir):
+            if os.path.isfile:
+                os.remove(f"{self.tmpDir}/{file}")
+        os.removedirs(self.tmpDir)
 
 
     def resultContainerSelection(self):
@@ -154,7 +162,6 @@ class exo4:
 
     def leftScreen_flip(self, state):
         self.updatePanel.hide()
-        print(f"flip {state} indexes ...")
 
         indexes = [entity["_id"] for entity in self.resultList
                     if f"{entity['ville']} ; {entity['nom']}" in self.resultContainer.value]
@@ -277,10 +284,10 @@ class exo4:
             ax.set_ylim(mapBox[2], mapBox[3])
             ax.imshow(plt.imread(f"img/{line['ville']}.png"), extent=mapBox, zorder=0, aspect='equal')
 
-            fig.savefig(f"tmp_{i}.png")
+            fig.savefig(f"{self.tmpDir}/{i}.png")
             graphs.append(fig)
 
-            frames.append(Picture(container, image=f"tmp_{i}.png", height=350, align="top"))
+            frames.append(Picture(container, image=f"{self.tmpDir}/{i}.png", height=350, align="top"))
             frames[-1].hide()
 
 
@@ -296,9 +303,9 @@ class exo4:
         ax = newfig.gca()
         ax.add_patch(Polygon(polygon, alpha=0.2, color="red"))
         ax.scatter([x for x, _ in polygon], [y for _, y in polygon], c="red", marker="x")
-        newfig.savefig(f"tmp_{index}.png")
+        newfig.savefig(f"{self.tmpDir}/{index}.png")
 
-        imgs[index].value = f"tmp_{index}.png"
+        imgs[index].value = f"{self.tmpDir}/{index}.png"
 
 
     def upperRight_stats(self, container):
