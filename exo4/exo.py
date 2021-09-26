@@ -288,7 +288,7 @@ class exo4:
 
 
     def showMap(self, i, textField, buttons):
-        buttons[self.currentFrame].text_size = 9
+        buttons[self.currentFrame].text = buttons[self.currentFrame].text.title()
 
         self.clear_polygon()
         self.showFrame(self.pictures, i)
@@ -296,7 +296,7 @@ class exo4:
         box = self.boundingBoxes[i]
         textField.append([[box[0], box[2]], [box[0], box[3]], [box[1], box[3]], [box[1], box[2]]]) # whole box
 
-        buttons[i].text_size = 10
+        buttons[i].text = buttons[i].text.upper()
 
 
     def updateMaps(self):
