@@ -3,12 +3,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.colors import ListedColormap
-import io
-import pickle
 import json
 import os
 
-from utils.utils import listFiles, readJson
+from utils.utils import listFiles, readJson, dumpGraph
 from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import updateStation
 from exo4.exo4_3.exo import deleteStation
@@ -18,6 +16,8 @@ from exo4.exo4_5.exo import step5
 
 class exo4:
     def __init__(self, collection_live, collection_history, *_):
+        plt.switch_backend('agg') # able to end prgm when close windows
+
         self.collection_live = collection_live
         self.collection_history = collection_history
         self.resultList = []
@@ -28,6 +28,10 @@ class exo4:
         self.updateButton = None
         self.currentFrame = None
         self.tmpDir = "tmp"
+        self.baseGraphs = []
+        self.graphs = []
+        self.pictures = []
+        self.boundingBoxes = []
 
         if not os.path.exists(self.tmpDir):
             os.mkdir(self.tmpDir)
@@ -159,6 +163,7 @@ class exo4:
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
 
         deleteStation(self.collection_live, self.collection_history, to_remove)
+        self.updateMaps()
 
 
     def leftScreen_flip(self, state):
@@ -168,6 +173,7 @@ class exo4:
                     if f"{entity['ville']} ; {entity['nom']}" in self.resultContainer.value]
 
         flipStations(self.collection_live, indexes, state)
+        self.updateMaps()
 
 
     def createRightScreen(self, container):
@@ -232,81 +238,85 @@ class exo4:
                     command=self.updateResult_form, args=args)
 
 
-    def showMap(self, frames, i, boundingBoxes, textField):
-        self.showFrame(frames, i)
+    def showMap(self, i, textField):
+        self.showFrame(self.pictures, i)
         textField.clear()
-        box = boundingBoxes[i]
+        box = self.boundingBoxes[i]
         textField.append([[box[0], box[2]], [box[0], box[3]], [box[1], box[3]], [box[1], box[2]]]) # whole box
 
 
     def upperRight_map(self, container):
-        plt.switch_backend('agg') # able to end prgm when close windows
-
         Box(container, height="10")  # margin
         Text(container, align="top", text="Polygonalisation")
         Box(container, height="10")  # margin
         menu_box = Box(container, align="top", layout="grid")
 
-        frames = []
-        graphs = []
-        boundingBoxes = []
-
         footer = Box(container, align="bottom")
         Box(footer, height="10")  # margin
         inputs = Box(footer, layout="grid")
         Text(inputs, grid=[0,0], text="Polygone : ")
-        polyInput = TextBox(inputs, grid=[1,0], width=20)
+        polyField = TextBox(inputs, grid=[1,0], width=20)
         Text(inputs, grid=[2,0])
-        PushButton(inputs, grid=[3,0], text="Appliquer", command=self.draw_polygone,
-                    args=(polyInput, frames, graphs))
+        PushButton(inputs, grid=[3,0], text="Appliquer", command=self.draw_polygon, args=(polyField,))
+        # push button clear ?
         Box(footer, height="10")  # margin
-        PushButton(footer, text="Sélectionner") #, command=send, args=(boundingboxes))
+        PushButton(footer, text="Sélectionner") #, command=send, args=(polyField))
         Box(footer, height="10")  # margin
 
-        for i, line in enumerate(getCoordsByTown(self.collection_live)):
-            PushButton(menu_box, width="10", grid=[i,0], text=line['ville'], command=self.showMap,
-                        args=(frames, i, boundingBoxes, polyInput))
+        for i, file in enumerate(listFiles("apis/imgs")):
+            name = file[10:-4]
+            PushButton(menu_box, width="10", grid=[i,0], text=name, command=self.showMap, args=(i, polyField))
 
-            df = pd.DataFrame([line for line in line["coords"]], columns=["lat", "lon", "actif"])
-
-            # read from json api files
-            mapBox = readJson(f"apis/{line['ville'].lower()}.json")["visual"]["boundingBox"]
-            padding = 0.001 # overflow approx
-            boundingBoxes.append((round(df.lon.min()-padding, 4),
-                                    round(df.lon.max()+padding, 4),
-                                    round(df.lat.min()-padding, 4),
-                                    round(df.lat.max()+padding, 4)))
+            mapBox = readJson(f"apis/{name.lower()}.json")["visual"]["boundingBox"]
 
             fig = plt.figure()
             ax = fig.gca()
             ax.grid(True)
-            ax.scatter(df.lon, df.lat, zorder=1, s=8, c=df.actif, cmap=ListedColormap(["blue"] if len(df.actif.unique()) == 1 else ["black", "blue"]))
-            ax.imshow(plt.imread(f"apis/imgs/{line['ville']}.png"), extent=mapBox, zorder=0, aspect='equal')
+            ax.imshow(plt.imread(file), extent=mapBox, zorder=0, aspect='equal')
             ax.set_xlim(mapBox[0], mapBox[1])
             ax.set_ylim(mapBox[2], mapBox[3])
 
             fig.savefig(f"{self.tmpDir}/{i}.png")
-            graphs.append(fig)
+            self.baseGraphs.append(fig)
+            self.graphs.append(fig)
+            self.boundingBoxes.append([])
 
-            frames.append(Picture(container, image=f"{self.tmpDir}/{i}.png", height=350, align="top"))
-            frames[-1].hide()
+            self.pictures.append(Picture(container, image=f"{self.tmpDir}/{i}.png", height=350, align="top"))
+            self.pictures[-1].hide()
+
+        self.updateMaps()
 
 
-    def draw_polygone(self, polyInput, imgs, graphs):
+    def updateMaps(self):
+        for i, line in enumerate(getCoordsByTown(self.collection_live)):
+            df = pd.DataFrame([line for line in line["coords"]], columns=["lat", "lon", "actif"])
+
+            padding = 0.001 # overflow approx
+            self.boundingBoxes[i] = (round(df.lon.min()-padding, 4),
+                                    round(df.lon.max()+padding, 4),
+                                    round(df.lat.min()-padding, 4),
+                                    round(df.lat.max()+padding, 4))
+
+            newfig = dumpGraph(self.baseGraphs[i])
+            newfig.gca().scatter(df.lon, df.lat, zorder=1, s=8, c=df.actif,
+                                cmap=ListedColormap(["blue"] if len(df.actif.unique()) == 1 else ["black", "blue"]))
+            newfig.savefig(f"{self.tmpDir}/{i}.png")
+
+            self.graphs[i]= newfig
+            self.pictures[i].value = f"{self.tmpDir}/{i}.png"
+
+
+    def draw_polygon(self, field):
+        polygon = json.loads(field.value)
+
         index = self.currentFrame
-
-        polygon = json.loads(polyInput.value)
-
-        graph_buffer = io.BytesIO()
-        pickle.dump(graphs[index], graph_buffer)
-        graph_buffer.seek(0)  # crucial
-        newfig = pickle.load(graph_buffer)
+        newfig = dumpGraph(self.graphs[index])
         ax = newfig.gca()
         ax.add_patch(Polygon(polygon, alpha=0.2, color="red"))
         ax.scatter([x for x, _ in polygon], [y for _, y in polygon], c="red", marker="x")
         newfig.savefig(f"{self.tmpDir}/{index}.png")
 
-        imgs[index].value = f"{self.tmpDir}/{index}.png"
+        self.pictures[index].value = f"{self.tmpDir}/{index}.png"
 
 
     def upperRight_stats(self, container):
@@ -369,5 +379,6 @@ class exo4:
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
 
         updateStation(self.collection_live, entity)
+        self.updateMaps()
 
         self.updatePanel.hide()

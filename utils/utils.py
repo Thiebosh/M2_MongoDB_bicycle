@@ -1,6 +1,8 @@
 import json
 import os
 import requests
+import io
+import pickle
 
 
 def listFiles(path):
@@ -31,3 +33,10 @@ def access_data(accessed, actions):
             accessed = [record[key["unpack"]] for record in accessed]
 
     return accessed
+
+
+def dumpGraph(graph):
+    graph_buffer = io.BytesIO()
+    pickle.dump(graph, graph_buffer)
+    graph_buffer.seek(0)  # crucial
+    return pickle.load(graph_buffer)
