@@ -12,7 +12,7 @@ from exo4.exo4_1.exo import searchByTownAndStation
 from exo4.exo4_2.exo import updateStation
 from exo4.exo4_3.exo import deleteStation
 from exo4.exo4_4.exo import flipStations, getCoordsByTown, searchByPolygon
-from exo4.exo4_5.exo import step5
+from exo4.exo4_5.exo import searchByStats
 
 
 class exo4:
@@ -345,34 +345,43 @@ class exo4:
         Text(container, text="Recherche statistique")
         Box(container, height="25")  # margin
 
-        inputs1 = {
-            "ratio": {
-                "text": "ratio vélo/total"
-            }
-        }
-        formGenerator(container, inputs1)
+        Box(container, height="10")  # margin
+        
+        inputsContainer = Box(container, layout="grid")
+        Text(inputsContainer, grid=[1,0], text="Ratio vélo / total ")
+        comparison = [">", ">=", "==", "<=", "<"]
+        compare = Combo(inputsContainer, grid=[2,0], width=2, options=comparison, selected="<")
+        Text(inputsContainer, grid=[3,0])
+        ratio = TextBox(inputsContainer, grid=[4,0], width=5, text="20")
+        Text(inputsContainer, grid=[5,0], text=" %")
 
-        # choice = ButtonGroup(container, options=["en dessous de", "au dessus de"])
-        combo = Combo(container, width=20, options=["Greater than", "Greater or equal to", "Equals to", "Lower or equal to", "Lower than"])
+        Box(container, height="15")  # margin
 
-        inputs2 = {
-            "begin_hour": {
-                "text": "heure de début"
-            },
-            "end_hour": {
-                "text": "heure de fin"
-            },
-            "begin_week": {
-                "text": "Jour de semaine de début"
-            },
-            "end_week": {
-                "text": "Jour de semaine de fin"
-            }
-        }
-        formGenerator(container, inputs2)
+        inputsContainer = Box(container, layout="grid")
+        hours = list(range(24))
+        minuts = list(range(0, 60, 5))
+        Text(inputsContainer, grid=[1,0], text="De ")
+        begin_hour = Combo(inputsContainer, grid=[2,0], width=1, options=hours, selected="18")
+        Text(inputsContainer, grid=[3,0], text=":")
+        begin_minuts = Combo(inputsContainer, grid=[4,0], width=1, options=minuts)
+        Text(inputsContainer, grid=[5,0], text=" à ")
+        end_hour = Combo(inputsContainer, grid=[6,0], width=1, options=hours, selected="19")
+        Text(inputsContainer, grid=[7,0], text=":")
+        end_minuts = Combo(inputsContainer, grid=[8,0], width=1, options=minuts)
+
+        Box(container, height="15")  # margin
+
+        inputsContainer = Box(container, layout="grid")
+        days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+        Text(inputsContainer, grid=[1,0], text="Du ")
+        begin_week = Combo(inputsContainer, grid=[2,0], width=12, options=days, selected="Lundi")
+        Text(inputsContainer, grid=[3,0], text=" au ")
+        end_week = Combo(inputsContainer, grid=[4,0], width=12, options=days, selected="Vendredi")
 
         Box(container, height="25")  # margin
-        PushButton(container, width="10", text="Rechercher") #, command=self.showMap, args=(i, polyField))
+
+        args = (compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, days, begin_week, end_week)
+        PushButton(container, width="10", text="Rechercher", command=self.updateResult_stats, args=args)
 
 
     def updateResult_form(self, town, station):
@@ -381,6 +390,21 @@ class exo4:
 
     def updateResult_polygon(self):
         self.insertResult(searchByPolygon(self.collection_live, self.polygon))
+
+
+    def updateResult_stats(self, compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, week, begin_week, end_week):
+        compare_map = {
+            ">": "$gt",
+            ">=": "$gte",
+            "==": "$eq",
+            "<=": "$lte",
+            "<": "$lt"
+        }
+        args = (compare_map[compare.value], ratio.value,
+                begin_hour.value, begin_minuts.value,
+                end_hour.value, end_minuts.value,
+                week.index(begin_week.value), week.index(end_week.value))
+        self.insertResult(searchByStats(self.collection_live, self.collection_history, *args))
 
 
     def insertResult(self, list):
