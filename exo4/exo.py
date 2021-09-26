@@ -338,8 +338,34 @@ class exo4:
 
     def upperRight_stats(self, container):
         Box(container, height="10")  # margin
-
         Text(container, text="Recherche statistique")
+        Box(container, height="25")  # margin
+        
+        inputs = {
+            "ratio": {
+                "text": "ratio vélo/total"
+            },
+            "begin_hour": {
+                "text": "heure de début"
+            },
+            "end_hour": {
+                "text": "heure de fin"
+            },
+            "begin_week": {
+                "text": "Jour de semaine de début"
+            },
+            "end_week": {
+                "text": "Jour de semaine de fin"
+            }
+        }
+        inputsContainer = Box(container, layout="grid")
+        for i, (key, data) in enumerate(inputs.items()):
+            Text(inputsContainer, grid=[0,i], text=data["text"])
+            Text(inputsContainer, grid=[1,i])  # margin
+            inputs[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25")
+        
+        Box(container, height="25")  # margin
+        PushButton(container, width="10", text="Rechercher") #, command=self.showMap, args=(i, polyField))
 
 
     def updateResult_form(self, town, station):
