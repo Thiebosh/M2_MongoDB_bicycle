@@ -137,18 +137,22 @@ class exo4:
             texts[key] = Text(self.updateInputs, grid=[0,i], text=key.title())
             Text(self.updateInputs, grid=[1,i])  # margin
             inputs[key] = TextBox(self.updateInputs, grid=[2,i], width="25", text=value)
-
             i += 1
+
+            Box(self.updateInputs, grid=[0,i], height="5")  # margin
+            i += 1
+
+        texts["nbplacestotal"].clear()
+        texts["nbplacestotal"].append("Emplacements totaux")
 
         for (key, value) in zip(["latitude", "longitude"], entity["geometry"]["coordinates"]):
             Text(self.updateInputs, grid=[0,i], text=key.title())
             Text(self.updateInputs, grid=[1,i])  # margin
             inputs[key] = TextBox(self.updateInputs, grid=[2,i], width="25", text=value)
-
             i += 1
 
-        texts["nbplacestotal"].clear()
-        texts["nbplacestotal"].append("Emplacements totaux")
+            Box(self.updateInputs, grid=[0,i], height="5")  # margin
+            i += 1
 
         self.updateButton.update_command(command=self.updateFields, args=(index, entity, inputs))
         
@@ -454,11 +458,11 @@ class exo4:
 
         Text(updateBox, text="Modification des données d'une station")
 
-        Box(updateBox, height="25")  # margin
+        Box(updateBox, height="10")  # margin
 
         self.updateInputs = Box(updateBox, layout="grid")
 
-        Box(updateBox, height="40")  # margin
+        Box(updateBox, height="8")  # margin
 
         self.updateButton = PushButton(updateBox, text="Modifier", width="16")
 

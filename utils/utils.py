@@ -39,13 +39,18 @@ def access_data(accessed, actions):
 def formGenerator(container, config):
     inputsContainer = Box(container, layout="grid")
 
-    for i, (key, data) in enumerate(config.items()):
+    i = 0
+    for (key, data) in config.items():
         Text(inputsContainer, grid=[0,i], text=data["text"].title())
         Text(inputsContainer, grid=[1,i])  # margin
         config[key]["ptr"] = TextBox(inputsContainer, grid=[2,i], width="25")
 
         if "value" in data:
             config[key]["ptr"].value = data["value"]
+        i += 1
+
+        Box(inputsContainer, grid=[0,i], height="5")  # margin
+        i += 1
 
 
 def dumpGraph(graph):
