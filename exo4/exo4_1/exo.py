@@ -37,6 +37,11 @@ def getTowns(collection):
             "$group": {
                 "_id": "$ville"
             }
+        },
+        {
+            "$sort": {
+                "_id": 1
+            }
         }
     ]
 

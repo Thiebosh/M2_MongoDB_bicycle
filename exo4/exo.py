@@ -129,7 +129,8 @@ class exo4:
 
         inputs = {}
         texts = {}
-        for i, (key, value) in enumerate(entity.items()):
+        i = 0
+        for (key, value) in entity.items():
             if key in ["_id", "geometry", "actif", "nbvelosdispo", "nbplacesdispo"]:
                 continue
 
@@ -137,12 +138,14 @@ class exo4:
             Text(self.updateInputs, grid=[1,i])  # margin
             inputs[key] = TextBox(self.updateInputs, grid=[2,i], width="25", text=value)
 
-        for i, value in enumerate(entity["geometry"]["coordinates"]):
-            key = ["latitude", "longitude"][i]
-            j = i + len(inputs) + 1
-            Text(self.updateInputs, grid=[0,j], text=key.title())
-            Text(self.updateInputs, grid=[1,j])  # margin
-            inputs[key] = TextBox(self.updateInputs, grid=[2,j], width="25", text=value)
+            i += 1
+
+        for (key, value) in zip(["latitude", "longitude"], entity["geometry"]["coordinates"]):
+            Text(self.updateInputs, grid=[0,i], text=key.title())
+            Text(self.updateInputs, grid=[1,i])  # margin
+            inputs[key] = TextBox(self.updateInputs, grid=[2,i], width="25", text=value)
+
+            i += 1
 
         texts["nbplacestotal"].clear()
         texts["nbplacestotal"].append("Emplacements totaux")
@@ -235,9 +238,11 @@ class exo4:
         townField = Combo(inputsContainer, grid=[2,0], width="19",
                             options=["Tous"]+[line["_id"] for line in getTowns(self.collection_live)])
 
-        Text(inputsContainer, grid=[0,1], text="Nom de station")
-        Text(inputsContainer, grid=[1,1])  # margin
-        nameField = TextBox(inputsContainer, grid=[2,1], width="25")
+        Box(inputsContainer, grid=[0,1], height="5")  # margin
+
+        Text(inputsContainer, grid=[0,2], text="Nom de station")
+        Text(inputsContainer, grid=[1,2])  # margin
+        nameField = TextBox(inputsContainer, grid=[2,2], width="25")
 
         Box(container, height="40")  # margin
 
@@ -257,8 +262,8 @@ class exo4:
         Text(inputs, grid=[0,0,1,2], text="Polygone : ")
         polyField = TextBox(inputs, grid=[1,0,1,2], width=25)
         Text(inputs, grid=[2,0])
-        PushButton(inputs, grid=[3,0], width=7, text="Appliquer", command=self.draw_polygon, args=(polyField,))
-        PushButton(inputs, grid=[3,1], width=7, text="Retirer", command=self.clear_polygon)
+        PushButton(inputs, grid=[3,0], width=7, pady=4, text="Appliquer", command=self.draw_polygon, args=(polyField,))
+        PushButton(inputs, grid=[3,1], width=7, pady=4, text="Retirer", command=self.clear_polygon)
         Box(footer, height="10")  # margin
         self.mapBtn = PushButton(footer, text="Sélectionner", enabled=False)
         self.mapBtn.update_command(self.updateResult_polygon, args=(self.mapBtn,))
