@@ -28,18 +28,18 @@ if __name__ == "__main__":
 
     try:
         exos = [
-            # {
-            #     "ptr": exo1,
-            #     "args" : ()
-            # },
-            # {
-            #     "ptr": exo2,
-            #     "args" : (evt_end, )
-            # },
-            # {
-            #     "ptr": exo3,
-            #     "args" : ()
-            # },
+            {
+                "ptr": exo1,
+                "args" : ()
+            },
+            {
+                "ptr": exo2,
+                "args" : (evt_end, )
+            },
+            {
+                "ptr": exo3,
+                "args" : ()
+            },
             {
                 "ptr": exo4,
                 "args" : ()
@@ -51,9 +51,6 @@ if __name__ == "__main__":
             print(f"\nexo {i+1}:")
 
             exo["ptr"](collection_live, collection_history, *exo["args"])
-
-            if i != end:
-                input("\nContinue...")
 
     finally:
         # input("\nPress enter to close program...")
