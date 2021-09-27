@@ -35,6 +35,7 @@ class exo4:
         self.boundingBoxes = []
         self.polygon = None
         self.mapBtn = None
+        self.nbResult = None
 
         if not os.path.exists(self.tmpDir):
             os.mkdir(self.tmpDir)
@@ -76,8 +77,9 @@ class exo4:
     def createLeftScreen(self, container):
         resultBox = Box(container, height="fill", width=int(container.width/3), align="left")
 
-        resultTitle = Box(resultBox, width="fill")
-        Text(resultTitle, text="Résultats de recherche")
+        resultTitle = Box(resultBox, layout="grid")
+        Text(resultTitle, grid=[1,0], text="Résultats de recherche : ")
+        self.nbResult = Text(resultTitle, grid=[2,0])
 
         self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, multiselect=True, scrollbar=True,
                                         command=self.resultContainerSelection)
@@ -461,13 +463,17 @@ class exo4:
             pass # possible ratio non float value
 
 
-    def insertResult(self, btn, list):
+    def insertResult(self, btn, datas):
         btn.disable()
         self.updatePanel.hide()
         self.resultContainer.clear()
         self.resultList = []
 
-        for i, item in enumerate(list):
+        datas = list(datas)
+        self.nbResult.clear()
+        self.nbResult.append(len(datas))
+
+        for i, item in enumerate(datas):
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
             self.resultList.append(item)
             self.flipDisplayState(i, item["actif"])
