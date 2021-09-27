@@ -1,4 +1,16 @@
 
 def updateStation(collection, object):
-    pass
-    # extract id from object and update fields in it
+    #print(object["_id"])
+
+    match = {
+        "_id": object["_id"]
+        }
+    query = {
+        "$set": {
+            **object,
+        }
+    }
+
+    result = collection.update_one(match, query)
+    print(result)
+    return print(f"=> updated {result.modified_count}/{result.matched_count} lines")
