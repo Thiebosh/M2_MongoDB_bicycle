@@ -470,12 +470,12 @@ class exo4:
         }
         try:
             args = (compare_map[compare.value], ratio.get(),
-                    begin_hour.value, begin_minuts.value,
-                    end_hour.value, end_minuts.value,
+                    int(begin_hour.value), begin_minuts.value,
+                    int(end_hour.value), end_minuts.value,
                     week.index(begin_week.value), week.index(end_week.value))
             self.insertResult(btn, searchByStats(self.collection_live, self.collection_history, *args))
-        except:
-            pass # possible ratio non float value
+        except Exception as e:
+            print(e)
 
 
     def insertResult(self, btn, datas):
