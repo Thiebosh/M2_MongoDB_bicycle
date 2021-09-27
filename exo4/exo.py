@@ -468,7 +468,7 @@ class exo4:
             args = (compare_map[compare.value], ratio.get(),
                     int(begin_hour.value), int(end_hour.value),
                     week.index(begin_week.value) + 1, week.index(end_week.value) + 1)
-            self.insertResult(btn, searchByStats(self.collection_live, self.collection_history, *args))
+            self.insertResult(btn, searchByStats(self.collection_history, *args))
         except Exception as e:
             print(e)
 

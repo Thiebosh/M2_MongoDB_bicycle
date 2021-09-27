@@ -1,4 +1,4 @@
-def searchByStats(collection_live, collection_history, compare, ratio, begin_hour, end_hour,
+def searchByStats(collection_history, compare, ratio, begin_hour, end_hour,
                   begin_week, end_week):
 
     begin_hour = 1 # todo: remove
@@ -6,25 +6,31 @@ def searchByStats(collection_live, collection_history, compare, ratio, begin_hou
     hour_range = list(range(begin_hour, end_hour + 1))
     aggregation = [
         {
-            "$group":
-                {
-                    "_id": {"station": "$station_id",
-                            "dayOfWeek": {"$dayOfWeek": "$record_timestamp"},
-                            "hourOfDay": {"$hour": "$record_timestamp"}},
-                    "bike_available_avg": {"$avg": "$nbvelosdispo"},
-                    "stand_available_avg": {"$avg": "$nbplacesdispo"}
+            "$group": {
+                "_id": {
+                    "station": "$station_id",
+                    "dayOfWeek": {
+                        "$dayOfWeek": "$record_timestamp"
+                    },
+                    "hourOfDay": {
+                        "$hour": "$record_timestamp"
+                    }
+                },
+                "bike_available_avg": {
+                    "$avg": "$nbvelosdispo"
+                },
+                "stand_available_avg": {
+                    "$avg": "$nbplacesdispo"
                 }
-
+            }
         },
         {
             "$match": {
                 "_id.dayOfWeek": {
-                    "$in":
-                        days_range
+                    "$in": days_range
                 },
                 "_id.hourOfDay": {
-                    "$in":
-                        hour_range
+                    "$in": hour_range
                 }
             }
         },
@@ -43,10 +49,12 @@ def searchByStats(collection_live, collection_history, compare, ratio, begin_hou
                                     "$ne": ["$$result", 0]
                                 },
                                 "then": {
-                                    "$multiply": [{
-                                        "$divide": [
-                                            "$bike_available_avg", "$$result"
-                                        ]}, 100]
+                                    "$multiply": [
+                                        {
+                                            "$divide": ["$bike_available_avg", "$$result"]
+                                        },
+                                        100
+                                    ]
                                 },
                                 "else": 0
                             }
@@ -58,8 +66,35 @@ def searchByStats(collection_live, collection_history, compare, ratio, begin_hou
         {
             "$match": {
                 "ratio": {
-                    compare:
-                        ratio
+                    compare: ratio
+                }
+            }
+        },
+        {
+            "$lookup": {
+                "from": "live",
+                "localField": "_id.station",
+                "foreignField": "_id",
+                "as": "merged"
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "nested": "$merged"
+            }
+        },
+        {
+            "$match": {
+                "nested": {
+                    "$ne": []
+                }
+            }
+        },
+        {
+            "$replaceRoot": {
+                "newRoot": {
+                    "$arrayElemAt": ["$nested", 0]
                 }
             }
         }
