@@ -36,6 +36,7 @@ class exo4:
         self.polygon = None
         self.mapBtn = None
         self.nbResult = None
+        self.sort = None
 
         if not os.path.exists(self.tmpDir):
             os.mkdir(self.tmpDir)
@@ -78,8 +79,12 @@ class exo4:
         resultBox = Box(container, height="fill", width=int(container.width/3), align="left")
 
         resultTitle = Box(resultBox, layout="grid")
-        Text(resultTitle, grid=[1,0], text="Résultats de recherche : ")
-        self.nbResult = Text(resultTitle, grid=[2,0])
+        Text(resultTitle, grid=[0,0], text="Résultats de recherche : ")
+        self.nbResult = Text(resultTitle, grid=[1,0])
+
+        sort = Box(resultBox, layout="grid")
+        Text(sort, grid=[0,0], text="Trier par")
+        self.sort = Combo(sort, grid=[1,0], width=5, command=self.leftScreen_sort, options=["", "Nom", "Ville"])
 
         self.resultContainer = ListBox(resultBox, height="fill", width=resultBox.width, multiselect=True, scrollbar=True,
                                         command=self.resultContainerSelection)
@@ -140,6 +145,13 @@ class exo4:
             btn = PushButton(menu_box, width="15", pady=8, grid=button["grid"], text=button["name"],
                                 command=button["command"], args=button["args"], enabled=False)
             self.resultButtons.append(btn)
+
+
+    def leftScreen_sort(self, combo):
+        if not combo or not len(self.resultList):
+            return
+
+        self.insertResult(None, sorted(self.resultList, key=lambda k: k[combo.lower()]))
 
 
     def leftScreen_selection(self, lambdaList, lambdaSelect, lambdaBtns):
@@ -438,14 +450,17 @@ class exo4:
 
 
     def updateResult_form(self, btn, town, station):
+        self.sort.select_default()
         self.insertResult(btn, searchByTownAndStation(self.collection_live, town.value, station.value))
 
 
     def updateResult_polygon(self, btn):
+        self.sort.select_default()
         self.insertResult(btn, searchByPolygon(self.collection_live, [[lat, lon] for (lon, lat) in self.polygon]))
 
 
     def updateResult_stats(self, btn, compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, week, begin_week, end_week):
+        self.sort.select_default()
         compare_map = {
             ">": "$gt",
             ">=": "$gte",
@@ -464,7 +479,8 @@ class exo4:
 
 
     def insertResult(self, btn, datas):
-        btn.disable()
+        if btn:
+            btn.disable()
         self.updatePanel.hide()
         self.resultContainer.clear()
         self.resultList = []
@@ -478,7 +494,8 @@ class exo4:
             self.resultList.append(item)
             self.flipDisplayState(i, item["actif"])
 
-        btn.enable()
+        if btn:
+            btn.enable()
 
 
     def flipDisplayState(self, index, state):
