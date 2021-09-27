@@ -14,9 +14,19 @@ def flipStations(collection, objectIds, state):
     result = collection.update_many(match, query)
     print(f"=> updated {result.modified_count}/{result.matched_count}/{len(objectIds)} lines")
 
-    
+
 def searchByPolygon(collection, polygon):
-    return []
+    filter = {
+        "geometry": {
+            "$geoWithin": {
+                "$polygon": polygon
+            }
+        }
+    }
+
+    print(filter)
+
+    return collection.find(filter)
 
 
 def getCoordsByTown(collection):
@@ -26,7 +36,6 @@ def getCoordsByTown(collection):
                 "_id": 0,
                 "ville": 1,
                 "coords": [
-                    # how to unwind this
                     {
                         "$arrayElemAt": ["$geometry.coordinates", 0]
                     },

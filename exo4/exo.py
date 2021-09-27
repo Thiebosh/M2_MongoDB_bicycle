@@ -398,7 +398,7 @@ class exo4:
 
 
     def updateResult_polygon(self):
-        self.insertResult(searchByPolygon(self.collection_live, self.polygon))
+        self.insertResult(searchByPolygon(self.collection_live, [[lat, lon] for (lon, lat) in self.polygon]))
 
 
     def updateResult_stats(self, compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, week, begin_week, end_week):
