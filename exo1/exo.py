@@ -29,7 +29,7 @@ def insert_from_api(path):
     return [{
                 "_id": f"{mapper['ville']}_{fields[mapper['_id']]}",
                 "ville": mapper['ville'],
-                "nom": fields[mapper['nom']],
+                "nom": fields[mapper['nom']].title(),
                 "nbvelosdispo": 0,
                 "nbplacesdispo": 0,
                 "nbplacestotal": interpreter("nbplacestotal", fields, mapper),
@@ -58,9 +58,9 @@ def exo1(collection, *_):
         result = collection.create_index([("geometry", "2dsphere")])
         print(f"=> index name : {result}")
 
-        print("\nCreate text index for 'name' field...")
+        print("\nCreate text index for 'ville' field...")
         result = collection.create_index([("ville", "text")])
-        print(f"=> index name : {result}")
+        print(f"=> index ville : {result}")
     except Exception as e:
         print("something went wrong...")
         print(e)

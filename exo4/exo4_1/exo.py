@@ -1,10 +1,25 @@
 
 def searchByTownAndStation(collection, town, station):
-    filter = {
-        # regex pour station
-        "$text": {
-            "$search": town
+    stationFilter = {}
+    if station:
+        stationFilter = {
+            "nom": {
+                "$regex": station,
+                "$options": "i"
+            }
         }
+
+    townFilter = {}
+    if town != "Tous":
+        townFilter = {
+            "$text": {
+                "$search": town
+            }
+        }
+
+    filter = {
+        **stationFilter,
+        **townFilter
     }
 
     return collection.find(filter)
@@ -25,4 +40,4 @@ def getTowns(collection):
         }
     ]
 
-    return list(collection.aggregate(aggregation))
+    return collection.aggregate(aggregation)

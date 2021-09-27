@@ -231,7 +231,7 @@ class exo4:
         Text(inputsContainer, grid=[0,0], text="Ville")
         Text(inputsContainer, grid=[1,0])  # margin
         townField = Combo(inputsContainer, grid=[2,0], width="19",
-                            options=[line["_id"] for line in getTowns(self.collection_live)])
+                            options=["Tous"]+[line["_id"] for line in getTowns(self.collection_live)])
 
         Text(inputsContainer, grid=[0,1], text="Nom de station")
         Text(inputsContainer, grid=[1,1])  # margin
