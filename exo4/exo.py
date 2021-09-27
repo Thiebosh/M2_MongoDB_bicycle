@@ -423,28 +423,24 @@ class exo4:
 
         inputsContainer = Box(container, layout="grid")
         hours = list(range(24))
-        minuts = list(range(0, 60, 5))
         Text(inputsContainer, grid=[1,0], text="De ")
         begin_hour = Combo(inputsContainer, grid=[2,0], width=1, options=hours, selected="18")
-        Text(inputsContainer, grid=[3,0], text=":")
-        begin_minuts = Combo(inputsContainer, grid=[4,0], width=1, options=minuts)
-        Text(inputsContainer, grid=[5,0], text=" à ")
-        end_hour = Combo(inputsContainer, grid=[6,0], width=1, options=hours, selected="19")
-        Text(inputsContainer, grid=[7,0], text=":")
-        end_minuts = Combo(inputsContainer, grid=[8,0], width=1, options=minuts)
+        Text(inputsContainer, grid=[3,0], text="h à ")
+        end_hour = Combo(inputsContainer, grid=[4,0], width=1, options=hours, selected="19")
+        Text(inputsContainer, grid=[5,0], text="h")
 
         Box(container, height="15")  # margin
 
         inputsContainer = Box(container, layout="grid")
         days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
         Text(inputsContainer, grid=[1,0], text="Du ")
-        begin_week = Combo(inputsContainer, grid=[2,0], width=12, options=days, selected="Lundi")
+        begin_week = Combo(inputsContainer, grid=[2,0], width=8, options=days, selected="Lundi")
         Text(inputsContainer, grid=[3,0], text=" au ")
-        end_week = Combo(inputsContainer, grid=[4,0], width=12, options=days, selected="Vendredi")
+        end_week = Combo(inputsContainer, grid=[4,0], width=8, options=days, selected="Vendredi")
 
         Box(container, height="25")  # margin
 
-        args = (compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, days, begin_week, end_week)
+        args = (compare, ratio, begin_hour, end_hour, days, begin_week, end_week)
         btn = PushButton(container, width="10", text="Rechercher")
         btn.update_command(self.updateResult_stats, args=(btn, *args))
 
@@ -459,7 +455,7 @@ class exo4:
         self.insertResult(btn, searchByPolygon(self.collection_live, [[lat, lon] for (lon, lat) in self.polygon]))
 
 
-    def updateResult_stats(self, btn, compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, week, begin_week, end_week):
+    def updateResult_stats(self, btn, compare, ratio, begin_hour, end_hour, week, begin_week, end_week):
         self.sort.select_default()
         compare_map = {
             ">": "$gt",
@@ -470,9 +466,8 @@ class exo4:
         }
         try:
             args = (compare_map[compare.value], ratio.get(),
-                    int(begin_hour.value), begin_minuts.value,
-                    int(end_hour.value), end_minuts.value,
-                    week.index(begin_week.value), week.index(end_week.value))
+                    int(begin_hour.value), int(end_hour.value),
+                    week.index(begin_week.value) + 1, week.index(end_week.value) + 1)
             self.insertResult(btn, searchByStats(self.collection_live, self.collection_history, *args))
         except Exception as e:
             print(e)

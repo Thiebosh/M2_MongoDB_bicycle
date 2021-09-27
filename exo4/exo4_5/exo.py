@@ -1,14 +1,9 @@
-def searchByStats(collection_live, collection_history, compare, ratio, begin_hour, begin_minutes, end_hour, end_minutes,
+def searchByStats(collection_live, collection_history, compare, ratio, begin_hour, end_hour,
                   begin_week, end_week):
-    begin_week += 1
-    end_week += 1
 
-    # TODO :
-    begin_hour = 1
-
+    begin_hour = 1 # todo: remove
     days_range = list(range(begin_week, end_week + 1))
     hour_range = list(range(begin_hour, end_hour + 1))
-
     aggregation = [
         {
             "$group":
