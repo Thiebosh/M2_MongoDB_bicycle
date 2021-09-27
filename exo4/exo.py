@@ -127,11 +127,12 @@ class exo4:
         entity = self.resultList[index]
 
         inputs = {}
+        texts = {}
         for i, (key, value) in enumerate(entity.items()):
-            if key in ["_id", "geometry", "actif"]:
+            if key in ["_id", "geometry", "actif", "nbvelosdispo", "nbplacesdispo"]:
                 continue
 
-            Text(self.updateInputs, grid=[0,i], text=key.title())
+            texts[key] = Text(self.updateInputs, grid=[0,i], text=key.title())
             Text(self.updateInputs, grid=[1,i])  # margin
             inputs[key] = TextBox(self.updateInputs, grid=[2,i], width="25", text=value)
 
@@ -141,6 +142,9 @@ class exo4:
             Text(self.updateInputs, grid=[0,j], text=key.title())
             Text(self.updateInputs, grid=[1,j])  # margin
             inputs[key] = TextBox(self.updateInputs, grid=[2,j], width="25", text=value)
+
+        texts["nbplacestotal"].clear()
+        texts["nbplacestotal"].append("Emplacements totaux")
 
         self.updateButton.update_command(command=self.updateFields, args=(index, entity, inputs))
         
@@ -453,7 +457,7 @@ class exo4:
 
     
     def updateFields(self, index, entity, inputs):
-        intFields = ["nbvelosdispo", "nbplacesdispo", "nbplacestotal"]
+        intFields = ["nbplacestotal"]
         for key, value in inputs.items():            
             if key in ["longitude", "latitude"]:
                 continue
