@@ -57,9 +57,9 @@ def exo1(collection, *_):
         print("\nCreate 2dsphere index for 'geometry' field...")
         result = collection.create_index([("geometry", "2dsphere")])
         print(f"=> index name : {result}")
-        
+
         print("\nCreate text index for 'name' field...")
-        result = collection.create_index([("nom", "text")])
+        result = collection.create_index([("ville", "text")])
         print(f"=> index name : {result}")
     except Exception as e:
         print("something went wrong...")

@@ -7,8 +7,8 @@ from matplotlib.colors import ListedColormap
 import json
 import os
 
-from utils.utils import listFiles, readJson, formGenerator, dumpGraph
-from exo4.exo4_1.exo import searchByTownAndStation
+from utils.utils import listFiles, readJson, dumpGraph
+from exo4.exo4_1.exo import searchByTownAndStation, getTowns
 from exo4.exo4_2.exo import updateStation
 from exo4.exo4_3.exo import deleteStation
 from exo4.exo4_4.exo import flipStations, getCoordsByTown, searchByPolygon
@@ -226,20 +226,21 @@ class exo4:
 
         Box(container, height="25")  # margin
 
-        inputs = {
-            "town": {
-                "text": "Ville cible"
-            },
-            "station": {
-                "text": "Nom de station"
-            }
-        }
-        formGenerator(container, inputs)
+        inputsContainer = Box(container, layout="grid")
+
+        Text(inputsContainer, grid=[0,0], text="Ville")
+        Text(inputsContainer, grid=[1,0])  # margin
+        townField = Combo(inputsContainer, grid=[2,0], width="19",
+                            options=[line["_id"] for line in getTowns(self.collection_live)])
+
+        Text(inputsContainer, grid=[0,1], text="Nom de station")
+        Text(inputsContainer, grid=[1,1])  # margin
+        nameField = TextBox(inputsContainer, grid=[2,1], width="25")
 
         Box(container, height="40")  # margin
 
         PushButton(container, text="Rechercher", width="16", command=self.updateResult_form,
-                    args=(inputs["town"]["ptr"], inputs["station"]["ptr"]))
+                    args=(townField, nameField))
 
 
     def upperRight_map(self, container):

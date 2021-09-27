@@ -36,14 +36,14 @@ if __name__ == "__main__":
             #     "ptr": exo2,
             #     "args" : (evt_end, )
             # },
-            #{
-            #    "ptr": exo3,
-            #    "args" : ()
-            #},
-             {
-                 "ptr": exo4,
-                 "args" : ()
-             }
+            # {
+            #     "ptr": exo3,
+            #     "args" : ()
+            # },
+            {
+                "ptr": exo4,
+                "args" : ()
+            }
         ]
         end = len(exos) - 1
 
