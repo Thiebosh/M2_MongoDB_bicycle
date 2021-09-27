@@ -1,9 +1,7 @@
-def searchByStats(collection_history, compare, ratio, begin_hour, end_hour,
-                  begin_week, end_week):
-
-    begin_hour = 1 # todo: remove
+def searchByStats(collection_history, compare, ratio, begin_hour, end_hour, begin_week, end_week):
     days_range = list(range(begin_week, end_week + 1))
     hour_range = list(range(begin_hour, end_hour + 1))
+
     aggregation = [
         {
             "$group": {
@@ -56,7 +54,7 @@ def searchByStats(collection_history, compare, ratio, begin_hour, end_hour,
                                         100
                                     ]
                                 },
-                                "else": 0
+                                "else": -1 # prepare exclude
                             }
                         },
                     },
@@ -65,9 +63,18 @@ def searchByStats(collection_history, compare, ratio, begin_hour, end_hour,
         },
         {
             "$match": {
-                "ratio": {
-                    compare: ratio
-                }
+                "$and": [
+                    {
+                        "ratio": {
+                            "$ne": -1 # exclude
+                        }
+                    },
+                    {
+                        "ratio": {
+                            compare: ratio
+                        }
+                    }
+                ]
             }
         },
         {
@@ -75,27 +82,15 @@ def searchByStats(collection_history, compare, ratio, begin_hour, end_hour,
                 "from": "live",
                 "localField": "_id.station",
                 "foreignField": "_id",
-                "as": "merged"
+                "as": "merged" # array
             }
         },
         {
-            "$project": {
-                "_id": 0,
-                "nested": "$merged"
-            }
-        },
-        {
-            "$match": {
-                "nested": {
-                    "$ne": []
-                }
-            }
+            "$unwind": "$merged"
         },
         {
             "$replaceRoot": {
-                "newRoot": {
-                    "$arrayElemAt": ["$nested", 0]
-                }
+                "newRoot": "$merged"
             }
         }
     ]
