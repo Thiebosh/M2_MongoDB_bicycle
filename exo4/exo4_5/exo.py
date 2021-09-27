@@ -1,8 +1,14 @@
 def searchByStats(collection_live, collection_history, compare, ratio, begin_hour, begin_minutes, end_hour, end_minutes,
                   begin_week, end_week):
-
     begin_week += 1
     end_week += 1
+
+    # TODO :
+    begin_hour = 1
+
+    days_range = list(range(begin_week, end_week + 1))
+    hour_range = list(range(begin_hour, end_hour + 1))
+
     aggregation = [
         {
             "$group":
@@ -17,25 +23,51 @@ def searchByStats(collection_live, collection_history, compare, ratio, begin_hou
         },
         {
             "$match": {
-                "dayOfWeek": {
-                    "$in": {
-                        list(range(begin_week, end_week + 1))
-                    }
+                "_id.dayOfWeek": {
+                    "$in":
+                        days_range
+                },
+                "_id.hourOfDay": {
+                    "$in":
+                        hour_range
                 }
             }
         },
+        {
+            "$project": {
+                "ratio": {
+                    "$let": {
+                        "vars": {
+                            "result": {
+                                "$sum": ["$bike_available_avg", "$stand_available_avg"]
+                            }
+                        },
+                        "in": {
+                            "$cond": {
+                                "if": {
+                                    "$ne": ["$$result", 0]
+                                },
+                                "then": {
+                                    "$multiply": [{
+                                        "$divide": [
+                                            "$bike_available_avg", "$$result"
+                                        ]}, 100]
+                                },
+                                "else": 0
+                            }
+                        },
+                    },
+                }
+            }
+        },
+        {
+            "$match": {
+                "ratio": {
+                    compare:
+                        ratio
+                }
+            }
+        }
     ]
-    print("start")
-    print(list(collection_history.aggregate(aggregation)))
-    print("end")
 
-    # print(compare)
-    # print(ratio)
-    # print(begin_hour)
-    # print(begin_minutes)
-    # print(end_hour)
-    # print(end_minutes)
-    # print(begin_week)
-    # print(end_week)
-
-    return []
+    return collection_history.aggregate(aggregation)
