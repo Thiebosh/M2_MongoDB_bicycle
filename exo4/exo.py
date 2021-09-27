@@ -86,39 +86,68 @@ class exo4:
 
         scrollbar = Scrollbar(resultBox.tk, orient="horizontal")
         scrollbar.pack(side="bottom", fill="both")
-        self.resultContainer.children[0].tk.configure(xscrollcommand=scrollbar.set)
-        scrollbar.configure(command=self.resultContainer.children[0].tk.xview)
+        listBox = self.resultContainer.children[0].tk
+        listBox.configure(xscrollcommand=scrollbar.set)
+        scrollbar.configure(command=listBox.xview)
+
+        buttons = [
+            {
+                "name": "Sélectionner tout",
+                "command": self.leftScreen_selection,
+                "args": (lambda: listBox.select_set(0, "end"), lambda: self.resultButtons[1:], lambda btn: btn.enable()),
+                "grid": [0,0]
+            },
+            {
+                "name": "Déselectionner tout",
+                "command": self.leftScreen_selection,
+                "args": (lambda: listBox.selection_clear(0, "end"), lambda: self.resultButtons, lambda btn: btn.disable()),
+                "grid": [1,0]
+            }
+        ]
+        for button in buttons:
+            PushButton(menu_box, width="15", pady=8, grid=button["grid"], text=button["name"],
+                        command=button["command"], args=button["args"])
 
         buttons = [
             {
                 "name": "Modifier infos",
                 "command": self.leftScreen_update,
                 "args": (),
-                "grid": [0,0]
+                "grid": [0,1]
             },
             {
                 "name": "Supprimer sélection",
                 "command": self.leftScreen_delete,
                 "args": (),
-                "grid": [1,0]
+                "grid": [1,1]
             },
             {
                 "name": "Activer sélection",
                 "command": self.leftScreen_flip,
                 "args": (True,),
-                "grid": [0,1]
+                "grid": [0,2]
             },
             {
                 "name": "Désactiver sélection",
                 "command": self.leftScreen_flip,
                 "args": (False,),
-                "grid": [1,1]
+                "grid": [1,2]
             }
         ]
         for button in buttons:
-            btn = PushButton(menu_box, width="15", grid=button["grid"], text=button["name"],
+            btn = PushButton(menu_box, width="15", pady=8, grid=button["grid"], text=button["name"],
                                 command=button["command"], args=button["args"], enabled=False)
             self.resultButtons.append(btn)
+
+
+    def leftScreen_selection(self, lambdaList, lambdaSelect, lambdaBtns):
+        lambdaList()
+
+        for btn in lambdaSelect():
+            lambdaBtns(btn)
+
+        if self.resultContainer.value and len(self.resultContainer.value) == 1:
+            self.resultButtons[0].enable()
 
 
     def leftScreen_update(self):
