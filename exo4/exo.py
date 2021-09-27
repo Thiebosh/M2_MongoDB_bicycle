@@ -34,6 +34,7 @@ class exo4:
         self.pictures = []
         self.boundingBoxes = []
         self.polygon = None
+        self.mapBtn = None
 
         if not os.path.exists(self.tmpDir):
             os.mkdir(self.tmpDir)
@@ -210,7 +211,8 @@ class exo4:
 
 
     def showFrame(self, frames, index):
-        self.polygon = None
+        if self.polygon:
+            self.clear_polygon()
 
         for frame in frames:
             frame.hide()
@@ -239,8 +241,8 @@ class exo4:
 
         Box(container, height="40")  # margin
 
-        PushButton(container, text="Rechercher", width="16", command=self.updateResult_form,
-                    args=(townField, nameField))
+        btn = PushButton(container, text="Rechercher", width="16")
+        btn.update_command(self.updateResult_form, args=(btn, townField, nameField))
 
 
     def upperRight_map(self, container):
@@ -258,7 +260,9 @@ class exo4:
         PushButton(inputs, grid=[3,0], width=7, text="Appliquer", command=self.draw_polygon, args=(polyField,))
         PushButton(inputs, grid=[3,1], width=7, text="Retirer", command=self.clear_polygon)
         Box(footer, height="10")  # margin
-        PushButton(footer, text="Sélectionner", command=self.updateResult_polygon)
+        self.mapBtn = PushButton(footer, text="Sélectionner", enabled=False)
+        self.mapBtn.update_command(self.updateResult_polygon, args=(self.mapBtn,))
+
         Box(footer, height="10")  # margin
 
         towns = []
@@ -289,7 +293,6 @@ class exo4:
     def showMap(self, i, textField, buttons):
         buttons[self.currentFrame].text = buttons[self.currentFrame].text.title()
 
-        self.clear_polygon()
         self.showFrame(self.pictures, i)
         textField.clear()
         box = self.boundingBoxes[i]
@@ -332,9 +335,11 @@ class exo4:
         newfig.savefig(f"{self.tmpDir}/{index}.png")
 
         self.pictures[index].value = f"{self.tmpDir}/{index}.png"
+        self.mapBtn.enable()
 
 
     def clear_polygon(self):
+        self.mapBtn.disable()
         self.polygon = None
 
         index = self.currentFrame
@@ -358,11 +363,8 @@ class exo4:
         Text(inputsContainer, grid=[3,0])
         box = Box(inputsContainer, grid=[4,0])
 
-        #Create an instance of Tkinter frame or window
-        #Set the default value for SpinBox
         ratio = DoubleVar(box.tk, value=20.0)
         box.add_tk_widget(Spinbox(box.tk, from_=0, to=100, width=5, textvariable=ratio))
-        # ratio = TextBox(inputsContainer, grid=[4,0], width=5, text="20")
         Text(inputsContainer, grid=[5,0], text=" %")
 
         Box(container, height="15")  # margin
@@ -391,18 +393,19 @@ class exo4:
         Box(container, height="25")  # margin
 
         args = (compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, days, begin_week, end_week)
-        PushButton(container, width="10", text="Rechercher", command=self.updateResult_stats, args=args)
+        btn = PushButton(container, width="10", text="Rechercher")
+        btn.update_command(self.updateResult_stats, args=(btn, *args))
 
 
-    def updateResult_form(self, town, station):
-        self.insertResult(searchByTownAndStation(self.collection_live, town.value, station.value))
+    def updateResult_form(self, btn, town, station):
+        self.insertResult(btn, searchByTownAndStation(self.collection_live, town.value, station.value))
 
 
-    def updateResult_polygon(self):
-        self.insertResult(searchByPolygon(self.collection_live, [[lat, lon] for (lon, lat) in self.polygon]))
+    def updateResult_polygon(self, btn):
+        self.insertResult(btn, searchByPolygon(self.collection_live, [[lat, lon] for (lon, lat) in self.polygon]))
 
 
-    def updateResult_stats(self, compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, week, begin_week, end_week):
+    def updateResult_stats(self, btn, compare, ratio, begin_hour, begin_minuts, end_hour, end_minuts, week, begin_week, end_week):
         compare_map = {
             ">": "$gt",
             ">=": "$gte",
@@ -415,12 +418,13 @@ class exo4:
                     begin_hour.value, begin_minuts.value,
                     end_hour.value, end_minuts.value,
                     week.index(begin_week.value), week.index(end_week.value))
-            self.insertResult(searchByStats(self.collection_live, self.collection_history, *args))
+            self.insertResult(btn, searchByStats(self.collection_live, self.collection_history, *args))
         except:
             pass # possible ratio non float value
 
 
-    def insertResult(self, list):
+    def insertResult(self, btn, list):
+        btn.disable()
         self.updatePanel.hide()
         self.resultContainer.clear()
         self.resultList = []
@@ -429,6 +433,8 @@ class exo4:
             self.resultContainer.append(f"{item['ville']} ; {item['nom']}")
             self.resultList.append(item)
             self.flipDisplayState(i, item["actif"])
+
+        btn.enable()
 
 
     def flipDisplayState(self, index, state):

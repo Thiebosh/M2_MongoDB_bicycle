@@ -24,8 +24,6 @@ def searchByPolygon(collection, polygon):
         }
     }
 
-    print(filter)
-
     return collection.find(filter)
 
 
