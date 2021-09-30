@@ -15,7 +15,7 @@ def connectDB(jsonFile):
         print(f"Missing keys in your '{jsonFile}' file, close program.")
         exit(1)
 
-    return MongoClient(f"mongodb+srv://{creds['username']}:{creds['password']}@{creds['dbAccess']}")
+    return MongoClient(f"mongodb+srv://{creds['username']}:{creds['password']}@{creds['dbAccess']}", tlsAllowInvalidCertificates=True)
 
 
 if __name__ == "__main__":
